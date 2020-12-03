@@ -53,8 +53,8 @@ void st_initialize() {
 /// @brief Insert a new symbol table entry
 /// @param id* pointer to an id struct of the entry
 /// @param  decl* pointer to the declaration of the entry
-/// @retval None
-void st_insert(id *id_ptr, decl *decl_ptr) {
+/// @retval ste* pointer to the created symbol table entry
+ste *st_insert(id *id_ptr, decl *decl_ptr) {
     ste *prev_tail = st_tail->prev;
     
     // Allocate memory for a new symbol table entry
@@ -65,6 +65,20 @@ void st_insert(id *id_ptr, decl *decl_ptr) {
     new_ste->decl_ptr = decl_ptr;
     new_ste->prev = prev_tail;
     st_tail->prev = new_ste;
+    
+    return new_ste;
+}
+
+
+/// @brief Insert a new var to symbol table
+/// @brief Create a decl with declclass Var
+/// @brief and set its type pointer to type_decl
+/// @param id* pointer to an id struct of the entry
+/// @param  decl* pointer to the declaration of the type
+/// @retval ste* pointer to the created symbol table entry
+ste *st_declare(id *var_id, decl *type_decl) {
+    decl *var_decl  = decl_var(type_decl);
+    return st_insert(var_id, var_decl);
 }
 
 
@@ -77,11 +91,36 @@ void st_print() {
     
     printf("Symbol Table\n");
     while(st_iter != st_head) {
+        printf("------------------------------\n");
         printf("ID: %p, %s", st_iter->id_ptr, st_iter->id_ptr->name);
         printf("\n");
         printf("DECL: %p, %d", st_iter->decl_ptr, st_iter->decl_ptr->declclass);
         printf("\n");
+        if (st_iter->decl_ptr->declclass == DECL_VAR) {
+            printf("TYPE: %p", st_iter->decl_ptr->type);
+            printf("\n");
+        }
+        printf("------------------------------\n");
+        printf("               |              \n");
+        printf("               V              \n");
         st_iter = st_iter->prev;
     }
     printf("End of symbol table\n");
+}
+
+
+/// @brief Get the decl with the id
+/// @param id* pointer to an id struct of the entry
+/// @retval decl* pointer
+decl *st_decl_from_id(id *id_ptr) {
+    ste *st_iter = st_tail;
+    st_iter = st_iter->prev;
+    
+    while(st_iter != st_head) {
+        if (st_iter->id_ptr == id_ptr) return st_iter->decl_ptr;
+        st_iter = st_iter->prev;
+    }
+    
+    // No such id found in the symbol table
+    return NULL;
 }

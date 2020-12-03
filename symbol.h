@@ -38,7 +38,8 @@ ste *st_tail;
 /// Function declarations
 void st_initialize();
 void st_print();
-void st_insert(id *, decl *);
-
+ste *st_insert(id *, decl *);
+ste *st_declare(id *var_id, decl *type_decl);
+decl *st_decl_from_id(id *id_ptr);
 
 #endif

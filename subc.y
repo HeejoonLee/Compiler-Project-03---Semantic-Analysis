@@ -9,6 +9,7 @@
 
 int    yylex ();
 int    yyerror (char* s);
+void REDUCE(char* s);
 
 %}
 
@@ -16,6 +17,8 @@ int    yyerror (char* s);
 %union {
 	int		intVal;
 	char	*stringVal;
+    id *id_ptr;
+    decl *decl_ptr;
 }
 
 /* Precedences and Associativities */
@@ -33,10 +36,13 @@ int    yyerror (char* s);
 
 
 /* Token and Types */
-%token TYPE VOID NULLT STRUCT RETURN IF ELSE WHILE FOR BREAK CONTINUE
+%token VOID NULLT STRUCT RETURN IF ELSE WHILE FOR BREAK CONTINUE
 %token LOGICAL_OR LOGICAL_AND RELOP EQUOP INCOP DECOP STRUCTOP
 %token<intVal> INTEGER_CONST
-%token<stringVal> CHAR_CONST STRING ID
+%token<stringVal> CHAR_CONST STRING
+%token<id_ptr> TYPE ID
+
+%type<decl_ptr> type_specifier
 
 %%
 program
@@ -56,7 +62,10 @@ ext_def
         | func_decl compound_stmt
 
 type_specifier
-        : TYPE
+        : TYPE { 
+            decl *decl_ptr = st_decl_from_id($1);
+            $$ = decl_ptr;
+         }
         | VOID
         | struct_specifier
 
@@ -86,7 +95,10 @@ def_list    /* list of definitions, definition can be type(struct), variable, fu
         | /* empty */
 
 def
-        : type_specifier pointers ID ';'
+        : type_specifier pointers ID ';' { 
+            REDUCE("def->type_specifier pointers ID ;");
+            st_declare($3, $1);
+        }
         | type_specifier pointers ID '[' const_expr ']' ';'
         | type_specifier ';'
         | func_decl ';'
@@ -179,4 +191,10 @@ int    yyerror (char* s)
 {
 	fprintf (stderr, "%s\n", s);
 }
+
+
+void REDUCE(char *s) {
+    printf("%s\n", s);
+}
+
 

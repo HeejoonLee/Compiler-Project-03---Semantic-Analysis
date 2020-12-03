@@ -25,7 +25,7 @@ operator       [-,;\[\]\*()\{\}=\|&\/%\+!]
 %%
 {id}	{
 		   struct id *entered  = enter(ID, yytext, yyleng);
-		   yylval.stringVal = entered->name;
+		   yylval.id_ptr = entered;
 		   return entered->tokenType;
 		}
 		
@@ -97,5 +97,7 @@ int main(int argc, char* argv[])
 
    yyparse();
    fclose(yyin);
+   
+   st_print();
    return 0;
 }

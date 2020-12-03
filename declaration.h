@@ -52,6 +52,8 @@ typedef struct declaration{
 
 /// Function declarations
 decl *decl_type(id *);
+decl *decl_var(decl *type_decl);
 int _get_size(id *);
+int decl_is_type(decl *);
 
 #endif
