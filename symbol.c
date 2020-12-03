@@ -12,6 +12,8 @@
 
 #include "symbol.h"
 
+char *st_type_list[TYPE_SIZE] = { "int", "char" };
+
 
 /// @brief Initialize symbol table
 /// @brief Create dummy symbol table entry and insert primitives
@@ -41,7 +43,7 @@ void st_initialize() {
     // Add int and char to the symbol table
     int i;
     for (i=0; i<TYPE_SIZE; i++) {
-        id *type_id = get_id_from_name(type_list[i]);
+        id *type_id = get_id_from_name(st_type_list[i]);
         decl *type_decl = decl_type(type_id);
         st_insert(type_id, type_decl);        
     }
@@ -75,9 +77,9 @@ void st_print() {
     
     printf("Symbol Table\n");
     while(st_iter != st_head) {
-        printf("ID: %p, ", st_iter->id_ptr);
+        printf("ID: %p, %s", st_iter->id_ptr, st_iter->id_ptr->name);
         printf("\n");
-        printf("DECL: %p, ", st_iter->decl_ptr);
+        printf("DECL: %p, %d", st_iter->decl_ptr, st_iter->decl_ptr->declclass);
         printf("\n");
         st_iter = st_iter->prev;
     }

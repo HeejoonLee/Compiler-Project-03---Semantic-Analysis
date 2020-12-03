@@ -8,7 +8,12 @@
 #define __SUBC_H__
 
 #include <stdio.h>
-#include <strings.h>
+#include <string.h>
+#include <stdlib.h>
+
+typedef struct id id;
+#include "symbol.h"
+#include "declaration.h"
 
 typedef struct id {
 	int tokenType;
@@ -20,6 +25,7 @@ typedef struct id {
 unsigned hash(char *name);
 id *enter(int tokenType, char *name, int length);
 void ht_print();
+id *get_id_from_name(char *);
 
 int read_line();
 

@@ -106,6 +106,9 @@ id *enter(int tokenType, char *name, int length) {
 }
 
 
+/// @brief Print the hash table
+/// @param 
+/// @retval 
 void ht_print() {
     int i;
     for (i=0; i<HASH_TABLE_SIZE; i++) {
@@ -113,11 +116,33 @@ void ht_print() {
             nlist *nlist_iter = hashTable[i];
             printf("HashTable[%2d]: ", i);
             do {
-                printf("%s, %d ->", nlist_iter->data->name,
+                printf("%s, %d -> ", nlist_iter->data->name,
                                     nlist_iter->data->count);
                 nlist_iter = nlist_iter->next;
             } while(nlist_iter != NULL);
             printf("END\n");
         }
     }
+}
+
+
+/// @brief Return id* of id with the given name
+/// @param char* name
+/// @retval id* of the id with the given name
+id *get_id_from_name(char *name) {
+    int i;
+    for (i=0; i<HASH_TABLE_SIZE; i++) {
+        if (hashTable[i] != NULL) {
+            nlist *nlist_iter = hashTable[i];
+            do {
+                if (strcmp(nlist_iter->data->name, name) == 0) {
+                    return nlist_iter->data;
+                }
+                nlist_iter = nlist_iter->next;
+            } while(nlist_iter != NULL);
+        }
+    }
+    
+    // No id with such name
+    return NULL;
 }

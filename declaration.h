@@ -13,7 +13,10 @@
 #define __DECLARATION_H__
 
 #include <stdio.h>
-#include <strings.h>
+#include <string.h>
+#include <stdlib.h>
+
+typedef struct declaration decl;
 #include "subc.h"
 #include "symbol.h"
 
@@ -49,3 +52,6 @@ typedef struct declaration{
 
 /// Function declarations
 decl *decl_type(id *);
+int _get_size(id *);
+
+#endif

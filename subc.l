@@ -78,9 +78,12 @@ int main(int argc, char* argv[])
    static int tokentype[] = { TYPE, TYPE, VOID, NULLT, STRUCT,
                               RETURN, IF, ELSE, WHILE, FOR,
                               BREAK, CONTINUE, 0 };
+
    int i;
    for(i = 0; keyword[i] != NULL; i++)
       enter(tokentype[i], keyword[i], strlen(keyword[i]));
+      
+   ht_print();
 
    if(argc >= 2) yyin = fopen(argv[1], "r");
    else yyin = stdin;
@@ -88,6 +91,9 @@ int main(int argc, char* argv[])
       printf("Can't open input stream!\n");
       exit(1);
    }
+   
+   st_initialize();
+   st_print();
 
    yyparse();
    fclose(yyin);
