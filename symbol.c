@@ -42,7 +42,7 @@ void st_initialize() {
     int i;
     for (i=0; i<TYPE_SIZE; i++) {
         id *type_id = get_id_from_name(type_list[i]);
-        decl *type_decl = decl_type(type_id); // TODO
+        decl *type_decl = decl_type(type_id);
         st_insert(type_id, type_decl);        
     }
 }

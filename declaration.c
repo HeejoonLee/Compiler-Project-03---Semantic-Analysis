@@ -19,7 +19,7 @@ decl *decl_type(id *type_id) {
     decl *new_decl = malloc(sizeof(decl));
     if (new_decl == NULL) printf("malloc error in decl_type\n");
     
-    new_decl->declclass = 3;
+    new_decl->declclass = DECL_TYPE;
     new_decl->type = NULL;
     new_decl->value = 0;
     new_decl->real_value = 0.0;

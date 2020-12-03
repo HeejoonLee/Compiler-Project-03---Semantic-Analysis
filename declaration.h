@@ -17,6 +17,11 @@
 #include "subc.h"
 #include "symbol.h"
 
+#define DECL_VAR 0
+#define DECL_CONST 1
+#define DECL_FUNC 2
+#define DECL_TYPE 3
+
 
 /// Struct definition
 typedef struct declaration{
@@ -39,6 +44,7 @@ typedef struct declaration{
 
 
 /// Global variables
+
 
 
 /// Function declarations

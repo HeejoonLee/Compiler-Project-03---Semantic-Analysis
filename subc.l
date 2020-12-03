@@ -18,18 +18,25 @@ id		{letter}({letter}|{digit})*
 integer_const	([1-9]{digit}*)|"0"
 white-space		[ \t]+
 special-char	\\[nt]
+operator       [-,;\[\]\*()\{\}=\|&\/%\+!]
 
 
 %x COMMENT
 %%
-"int" 	|
-"char"	{ return TYPE; }
-"struct" 	{ return STRUCT;}
 {id}	{
 		   struct id *entered  = enter(ID, yytext, yyleng);
 		   yylval.stringVal = entered->name;
 		   return entered->tokenType;
 		}
+		
+"\|\|" { return LOGICAL_OR; }
+"&&" { return LOGICAL_AND; }
+"<"|"<="|">"|">=" { return RELOP; }
+"=="|"!=" { return EQUOP; }
+"\+\+" { return INCOP; }
+"--" { return DECOP; }
+"->" { return STRUCTOP; }
+
 {integer_const}	{
 		   yylval.intVal = atoi(yytext);
 		   return INTEGER_CONST;
@@ -44,8 +51,7 @@ special-char	\\[nt]
 		   yylval.stringVal = yytext;
 		   return CHAR_CONST;
 		}
-","		{ return ','; }
-";"		{ return yytext[0]; }
+{operator} { return yytext[0]; }
 
 {white-space}
 <*>\n		   ++lineno;
@@ -66,8 +72,12 @@ int read_line()
 
 int main(int argc, char* argv[])
 {
-   static char *keyword[] = { "int", NULL };
-   static int tokentype[] = { TYPE, 0 };
+   static char *keyword[] = { "int", "char", "void", "NULL", "struct",
+                              "return", "if", "else", "while", "for",
+                              "break", "continue", NULL };
+   static int tokentype[] = { TYPE, TYPE, VOID, NULLT, STRUCT,
+                              RETURN, IF, ELSE, WHILE, FOR,
+                              BREAK, CONTINUE, 0 };
    int i;
    for(i = 0; keyword[i] != NULL; i++)
       enter(tokentype[i], keyword[i], strlen(keyword[i]));

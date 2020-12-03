@@ -19,6 +19,7 @@ typedef struct id {
 /* For hash table */
 unsigned hash(char *name);
 id *enter(int tokenType, char *name, int length);
+void ht_print();
 
 int read_line();
 
