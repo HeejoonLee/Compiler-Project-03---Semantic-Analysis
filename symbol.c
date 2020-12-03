@@ -9,13 +9,12 @@
 ///
 //--------------------------------------------------------------------------------------------------
 
-#include <stdio.h>
-#include <strings.h>
+
 #include "symbol.h"
 
 
 /// @brief Initialize symbol table
-/// @brief Create dummy symbol table entry 
+/// @brief Create dummy symbol table entry and insert primitives
 /// @param None
 /// @retval None
 void st_initialize() {
@@ -26,7 +25,7 @@ void st_initialize() {
     ste *dummy_tail = malloc(sizeof(ste));
     if (dummy_tail == NULL) printf("malloc error in st_initialize\n");
     
-    // Initialize
+    // Initialize dummies
     dummy_head->id_ptr = NULL;
     dummy_head->decl_ptr = NULL;
     dummy_head->prev = NULL;
@@ -39,6 +38,31 @@ void st_initialize() {
     st_head = dummy_head;
     st_tail = dummy_tail;
     
+    // Add int and char to the symbol table
+    int i;
+    for (i=0; i<TYPE_SIZE; i++) {
+        id *type_id = get_id_from_name(type_list[i]);
+        decl *type_decl = decl_type(type_id); // TODO
+        st_insert(type_id, type_decl);        
+    }
+}
+
+
+/// @brief Insert a new symbol table entry
+/// @param id* pointer to an id struct of the entry
+/// @param  decl* pointer to the declaration of the entry
+/// @retval None
+void st_insert(id *id_ptr, decl *decl_ptr) {
+    ste *prev_tail = st_tail->prev;
+    
+    // Allocate memory for a new symbol table entry
+    ste *new_ste = malloc(sizeof(ste));
+    if (new_ste == NULL) printf("malloc error in st_insert\n");
+    
+    new_ste->id_ptr = id_ptr;
+    new_ste->decl_ptr = decl_ptr;
+    new_ste->prev = prev_tail;
+    st_tail->prev = new_ste;
 }
 
 
@@ -58,5 +82,4 @@ void st_print() {
         st_iter = st_iter->prev;
     }
     printf("End of symbol table\n");
-    
 }
