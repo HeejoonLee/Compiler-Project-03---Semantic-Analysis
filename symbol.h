@@ -37,3 +37,4 @@ char *type_list[TYPE_SIZE] = { "int", "char" };
 /// Function declarations
 void st_initialize();
 void st_print();
+void st_insert(id *, decl *);
