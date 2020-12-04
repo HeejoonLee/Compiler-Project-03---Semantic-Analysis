@@ -40,12 +40,13 @@ void st_initialize() {
     st_head = dummy_head;
     st_tail = dummy_tail;
     
-    // Add int and char to the symbol table
+    // Add types(int, char) to the symbol table
+    // Update type_scope accordingly
     int i;
     for (i=0; i<TYPE_SIZE; i++) {
         id *type_id = get_id_from_name(st_type_list[i]);
         decl *type_decl = decl_type(type_id);
-        st_insert(type_id, type_decl);        
+        type_scope->boundary = st_insert(type_id, type_decl); 
     }
 }
 
@@ -65,6 +66,9 @@ ste *st_insert(id *id_ptr, decl *decl_ptr) {
     new_ste->decl_ptr = decl_ptr;
     new_ste->prev = prev_tail;
     st_tail->prev = new_ste;
+    
+    // Update scope boundary
+    current_scope->boundary = new_ste;
     
     return new_ste;
 }

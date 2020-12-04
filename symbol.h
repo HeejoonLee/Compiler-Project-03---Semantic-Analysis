@@ -17,22 +17,33 @@
 #include <stdlib.h>  // malloc()
 
 typedef struct symbol_table_entry ste;
+typedef struct scope scope;
 #include "subc.h"
 #include "declaration.h"
 
 #define TYPE_SIZE 2
 
 /// Struct definition
+// Symbol table 
 typedef struct symbol_table_entry{
 	struct id *id_ptr;
 	struct declaration *decl_ptr;
 	struct symbol_table_entry *prev;
 } ste;
 
+// Scope stack
+typedef struct scope{
+    struct ste *boundary;
+    struct scope *prev;
+} scope;
+
 
 /// Global variables
 ste *st_head;
 ste *st_tail;
+
+scope *current_scope;
+scope *type_scope;
 
 
 /// Function declarations
