@@ -92,8 +92,11 @@ int main(int argc, char* argv[])
       exit(1);
    }
    
+   scope_initialize();
    st_initialize();
+   
    st_print();
+   scope_print();
 
    yyparse();
    fclose(yyin);

@@ -93,10 +93,11 @@ void st_print() {
     ste *st_iter = st_tail;
     st_iter = st_iter->prev;
     
-    printf("Symbol Table\n");
+    printf("\nSymbol Table\n");
     while(st_iter != st_head) {
+        printf("ADDR: %p\n", st_iter);
         printf("------------------------------\n");
-        printf("ID: %p, %s", st_iter->id_ptr, st_iter->id_ptr->name);
+        printf("ID  : %p, %s", st_iter->id_ptr, st_iter->id_ptr->name);
         printf("\n");
         printf("DECL: %p, %d", st_iter->decl_ptr, st_iter->decl_ptr->declclass);
         printf("\n");

@@ -111,6 +111,7 @@ id *enter(int tokenType, char *name, int length) {
 /// @retval 
 void ht_print() {
     int i;
+    printf("Start of hash table\n");
     for (i=0; i<HASH_TABLE_SIZE; i++) {
         if (hashTable[i] != NULL) {
             nlist *nlist_iter = hashTable[i];
@@ -123,6 +124,7 @@ void ht_print() {
             printf("END\n");
         }
     }
+    printf("End of hash table\n");
 }
 
 

@@ -33,7 +33,7 @@ typedef struct symbol_table_entry{
 
 // Scope stack
 typedef struct scope{
-    struct ste *boundary;
+    ste *boundary;
     struct scope *prev;
 } scope;
 
@@ -47,10 +47,17 @@ scope *type_scope;
 
 
 /// Function declarations
+// Symbol functions
 void st_initialize();
 void st_print();
 ste *st_insert(id *, decl *);
 ste *st_declare(id *var_id, decl *type_decl);
 decl *st_decl_from_id(id *id_ptr);
+
+// Scope functions
+void scope_initialize();
+void scope_push();
+void scope_pop();
+void scope_print();
 
 #endif
