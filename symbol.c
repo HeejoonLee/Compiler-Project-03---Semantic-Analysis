@@ -256,3 +256,11 @@ int st_check_bothint(decl *decl_ptr1, decl *decl_ptr2) {
 int st_check_ifint(decl *decl_ptr) {
     return decl_ptr->typeclass == 2;
 }
+
+
+/// @brief Check if decl is char
+/// @param decl* to check
+/// @retval 1 if char, 0 if not char
+int st_check_ifchar(decl *decl_ptr) {
+    return decl_ptr->typeclass == 3;
+}

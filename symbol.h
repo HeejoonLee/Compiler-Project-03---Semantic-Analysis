@@ -62,6 +62,7 @@ int st_check_iftype(decl *);
 int st_check_type_compat(decl *, decl *);
 int st_check_bothint(decl *decl_ptr1, decl *decl_ptr2);
 int st_check_ifint(decl *decl_ptr);
+int st_check_ifchar(decl *decl_ptr);
 
 // Scope functions
 void scope_initialize();

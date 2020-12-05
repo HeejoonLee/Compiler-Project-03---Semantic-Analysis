@@ -328,9 +328,49 @@ unary
             }
         }
         | unary INCOP
+        {
+            // Type checking: int, char
+            decl *type_decl = $1->type;
+            if (st_check_ifint(type_decl) || st_check_ifchar(type_decl))
+                $$ = type_decl;
+            else {
+                yyerror("not computable");
+                $$ = NULL;
+            }
+        }
         | unary DECOP
+        {
+            // Type checking: int, char
+            decl *type_decl = $1->type;
+            if (st_check_ifint(type_decl) || st_check_ifchar(type_decl))
+                $$ = type_decl;
+            else {
+                yyerror("not computable");
+                $$ = NULL;
+            }
+        }
         | INCOP unary
+        {
+            // Type checking: int, char
+            decl *type_decl = $2->type;
+            if (st_check_ifint(type_decl) || st_check_ifchar(type_decl))
+                $$ = type_decl;
+            else {
+                yyerror("not computable");
+                $$ = NULL;
+            }
+        }
         | DECOP unary
+        {
+            // Type checking: int, char
+            decl *type_decl = $2->type;
+            if (st_check_ifint(type_decl) || st_check_ifchar(type_decl))
+                $$ = type_decl;
+            else {
+                yyerror("not computable");
+                $$ = NULL;
+            }
+        }
         | '&' unary %prec '!'
         | '*' unary %prec '!'
         | unary '[' expr ']'
