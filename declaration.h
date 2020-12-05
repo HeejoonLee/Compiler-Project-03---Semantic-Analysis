@@ -38,7 +38,7 @@ typedef struct declaration{
     struct declaration *elementvar;
     int num_index;
     struct symbol_table_entry *fieldlist;
-    struct symbol_table_entry *ptrto;
+    struct declaration *ptrto;
     int size;
     struct symbol_table_entry **scope;
     struct declaration *next;
@@ -54,6 +54,12 @@ typedef struct declaration{
 decl *decl_type(id *);
 decl *decl_var(decl *type_decl);
 decl *decl_func(decl *type_decl);
+decl *decl_pointer(decl *type_decl);
+decl *decl_pointer_type(decl *type_decl);
+decl *decl_char_const(char char_value);
+decl *decl_int_const(int int_value);
+decl *decl_array(decl *type_decl, decl *const_decl);
+decl *decl_array_type(decl *type_decl, decl *const_decl);
 int _get_size(id *);
 int decl_is_type(decl *);
 

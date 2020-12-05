@@ -56,7 +56,9 @@ operator       [-,;\[\]\*()\{\}=\|&\/%\+!]
 {white-space}
 <*>\n		   {
     ++lineno;
-    if (lineno == 12) {
+    if (lineno == 12 || 
+        lineno == 15 || 
+        lineno == 19) {
         printf("LINE: %3d\n", lineno);
         scope_print();
         st_print();
@@ -110,5 +112,6 @@ int main(int argc, char* argv[])
    
    st_print();
    scope_print();
+   ht_print();
    return 0;
 }

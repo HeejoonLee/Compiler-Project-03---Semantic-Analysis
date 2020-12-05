@@ -42,8 +42,6 @@ unsigned hash(char *name) {
 /// @param length Length of the lexeme
 /// @retval Pointer to id struct containing information about the token
 id *enter(int tokenType, char *name, int length) {
-  // Do I need to copy the string or just use the address?
-  
   // 1. Find the hash value
   // 2. Check if it exists -> Increase count
   // 3. If not, create nlist object, and add it to the tail
@@ -145,6 +143,6 @@ id *get_id_from_name(char *name) {
         }
     }
     
-    // No id with such name
+    printf("ERROR: Name not found in hash table\n");
     return NULL;
 }

@@ -104,11 +104,27 @@ void st_print() {
         if (decl_ptr->declclass == DECL_VAR) {
             // variable
             printf("DECL: %p, VAR\n", decl_ptr);
-            printf("TYPE: %p, %s\n", decl_ptr->type,
-            st_get_ste_from_decl(decl_ptr->type)->id_ptr->name);
+            printf("TYPE: %p, %d\n", decl_ptr->type,
+            decl_ptr->type->typeclass);
+            if (decl_ptr->type->typeclass == 0) {
+                // pointer
+                printf("PTRT: %p, VAR\n", decl_ptr->type->ptrto);
+                printf("TYPE: %p, %d\n", decl_ptr->type->ptrto->type,
+                decl_ptr->type->ptrto->type->typeclass);
+            }
         }
         else if (decl_ptr->declclass == DECL_CONST) {
             // constant
+            printf("DECL: %p, CONST\n", decl_ptr);
+            printf("TYPE: %p, %d\n", decl_ptr->type, 
+            decl_ptr->type->typeclass);
+            if (decl_ptr->type->typeclass == 1) {
+                // array
+                printf("ELEM: %p, VAR\n", decl_ptr->type->elementvar);
+                printf("TYPE: %p, %d\n", decl_ptr->type->elementvar->type,
+                decl_ptr->type->elementvar->type->typeclass);
+                printf("INDX: %d\n", decl_ptr->type->num_index);
+            }
         }
         else if (decl_ptr->declclass == DECL_FUNC) {
             // function
@@ -144,6 +160,7 @@ decl *st_decl_from_id(id *id_ptr) {
     }
     
     // No such id found in the symbol table
+    printf("ERROR: No such id in the symbol table\n");
     return NULL;
 }
 
@@ -160,6 +177,7 @@ ste *st_get_ste_from_decl(decl *decl_ptr) {
         st_iter = st_iter->prev;
     }
     
+    printf("Such decl doesn't exist in symbol table\n");
     return NULL;
 }
 
