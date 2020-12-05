@@ -272,3 +272,11 @@ int st_check_ifint(decl *decl_ptr) {
 int st_check_ifchar(decl *decl_ptr) {
     return decl_ptr->typeclass == 3;
 }
+
+
+/// @brief Check if both decls are the same pointer of same type
+/// @param decl*s to check
+/// @retval 1 if pointer of the same type, 0 if not
+int st_check_both_same_pointers(decl *decl_ptr1, decl *decl_ptr2) {
+    return decl_ptr1->ptrto->type->typeclass == decl_ptr2->ptrto->type->typeclass;
+}
