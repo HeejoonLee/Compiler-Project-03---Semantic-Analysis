@@ -582,7 +582,7 @@ unary
                                 match = 0;
                                 break;
                         }
-                        if (!st_check_type_compat(decl_iter->type, ste_iter->decl_ptr->type)) {
+                        if (!st_check_type_compat(decl_iter, ste_iter->decl_ptr->type)) {
                             match = 0;
                             break;
                         }
@@ -624,12 +624,28 @@ unary
         }
 
 args    /* actual parameters(function arguments) transferred to function */
-        : expr { REDUCE("args->expr"); $$ = $1; 
-        decl *decl_ptr = $1;
-        if (!st_check_iftype(decl_ptr)) decl_ptr = decl_ptr->type;
-        printf("TYPE: %d\n", decl_ptr->typeclass);
+        : expr 
+        { 
+            // Make a list of types
+            if ($1 == NULL) $$ = NULL;
+            else {
+                decl *type_decl = $1;
+                if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
+                $$ = decl_type_from_type(type_decl);
+            }
         }
-        | args ',' expr { REDUCE("args->args , expr"); $3->next = $1; $$ = $3; }
+        | args ',' expr 
+        {
+            if (($1 == NULL) || ($3 == NULL)) $$ = NULL;
+            else {
+                decl *type_decl = $3;
+                if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
+                decl *new_type = decl_type_from_type(type_decl);
+                new_type->next = $1;
+                $$ = new_type;
+            }
+        }
+            
     
 %%
 

@@ -263,6 +263,32 @@ decl *decl_array_type(decl *type_decl, decl *const_decl) {
     
     return new_decl;
 }
+
+
+/// @brief Make a type decl with given type_decl
+/// @param decl* of type_decl
+/// @retval decl* of new declaration
+decl *decl_type_from_type(decl *decl_type) {
+    decl *new_decl = malloc(sizeof(decl));
+    if (new_decl == NULL) printf("malloc error in decl_array_type\n");
+    
+    new_decl->declclass = DECL_TYPE;
+    new_decl->type = decl_type->type;
+    new_decl->value = 0;
+    new_decl->real_value = 0.0;
+    new_decl->formals = NULL;
+    new_decl->returntype = NULL;
+    new_decl->typeclass = decl_type->typeclass; // array
+    new_decl->elementvar = decl_type->elementvar;
+    new_decl->num_index = decl_type->num_index;
+    new_decl->fieldlist = decl_type->fieldlist;
+    new_decl->ptrto = decl_type->ptrto;
+    new_decl->size = 0;
+    new_decl->scope = NULL;
+    new_decl->next = NULL;
+    
+    return new_decl;
+}
     
     
 
