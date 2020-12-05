@@ -19,6 +19,7 @@ void REDUCE(char* s);
 	char	*stringVal;
     id *id_ptr;
     decl *decl_ptr;
+    ste *ste_ptr;
 }
 
 /* Precedences and Associativities */
@@ -43,6 +44,7 @@ void REDUCE(char* s);
 %token<id_ptr> TYPE ID
 
 %type<decl_ptr> type_specifier
+%type<ste_ptr> unary
 
 %%
 program
@@ -96,8 +98,8 @@ def_list    /* list of definitions, definition can be type(struct), variable, fu
 
 def
         : type_specifier pointers ID ';' { 
-            REDUCE("def->type_specifier pointers ID ;");
-            if (st_check_redecl($3)) printf("Error: redeclaration\n");
+            // REDUCE("def->type_specifier pointers ID ;");
+            if (st_check_redecl($3)) yyerror("redeclaration");
             else st_declare($3, $1);
         }
         | type_specifier pointers ID '[' const_expr ']' ';'
@@ -165,7 +167,14 @@ unary
         | INTEGER_CONST
         | CHAR_CONST
         | STRING
-        | ID
+        | ID { 
+            decl *decl_ptr = st_decl_from_id($1);
+            if (decl_ptr != NULL) $$ = st_get_ste_from_decl(decl_ptr);
+            else {
+                yyerror("not declared");
+                $$ = NULL;
+                }
+            }
         | '-' unary %prec '!'
         | '!' unary
         | unary INCOP
@@ -190,7 +199,7 @@ args    /* actual parameters(function arguments) transferred to function */
 
 int    yyerror (char* s)
 {
-	fprintf (stderr, "%s\n", s);
+    printf("%2d: error: %s\n", read_line(), s);
 }
 
 

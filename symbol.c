@@ -131,6 +131,23 @@ decl *st_decl_from_id(id *id_ptr) {
 }
 
 
+/// @brief Get ste with the decl
+/// @param decl* pointer to search for
+/// @return ste* with the decl
+ste *st_get_ste_from_decl(decl *decl_ptr) {
+    ste *st_iter = st_tail;
+    st_iter = st_tail->prev;
+    
+    while(st_iter!= st_head) {
+        if (st_iter->decl_ptr == decl_ptr) return st_iter;
+        st_iter = st_iter->prev;
+    }
+    
+    return NULL;
+}
+
+
+// TODO: merge st_check_redcle and st_check_ifdecl
 /// @brief Check if there already exists a ste with the same id_ptr
 /// @param id_ptr to check for
 /// @retval 1 if exists, 0 if not
@@ -144,5 +161,22 @@ int st_check_redecl(id *id_ptr) {
     }
     
     // No duplicates
+    return 0;
+}
+
+
+/// @brief Check if the variable with id_ptr has been declared
+/// @param id_ptr to check for
+/// @retval 1 if declared, 0 if not
+int st_check_ifdecl(id *id_ptr) {
+    ste *st_iter = st_tail;
+    st_iter = st_iter->prev;
+    
+    while(st_iter != st_head) {
+        if (st_iter->id_ptr == id_ptr) return 1;
+        st_iter = st_iter->prev;
+    }
+    
+    // No declaration
     return 0;
 }
