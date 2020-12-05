@@ -33,7 +33,8 @@ decl *decl_type(id *type_id) {
     if (strcmp(type_id->name, "pointer") == 0) type = 0;
     else if (strcmp(type_id->name, "array") == 0) type = 1;
     else if (strcmp(type_id->name, "int") == 0) type = 2;
-    else type = 3;
+    else if (strcmp(type_id->name, "char") == 0) type = 3;
+    else type = 4;
     
     new_decl->typeclass = type;
     new_decl->elementvar = NULL;

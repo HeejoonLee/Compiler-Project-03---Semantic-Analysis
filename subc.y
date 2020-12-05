@@ -45,7 +45,8 @@ void REDUCE(char* s);
 
 %type<stringVal> pointers
 %type<decl_ptr> type_specifier unary binary and_list and_expr
-%type<decl_ptr> or_expr or_list expr const_expr
+%type<decl_ptr> or_expr or_list expr const_expr func_decl
+%type<decl_ptr> param_list param_decl args
 
 %%
 program
@@ -74,7 +75,7 @@ type_specifier
         : TYPE { 
             $$ = st_decl_from_id($1);
          }
-        | VOID
+        | VOID { $$ = st_decl_from_id(get_id_from_name("void")); }
         | struct_specifier
 
 struct_specifier
@@ -84,31 +85,72 @@ struct_specifier
 func_decl
         : type_specifier pointers ID '(' ')'
         {
-            st_insert($3, decl_func($1));
+            decl *decl_ptr = decl_func($1);
+            st_insert($3, decl_ptr);
+            decl_ptr->formals = st_get_ste_from_decl(decl_ptr);
+            scope_push();
+            $$ = decl_ptr;
         }
         | type_specifier pointers ID '(' VOID ')'
         {
-            st_insert($3, decl_func($1));
+            decl *decl_ptr = decl_func($1);
+            st_insert($3, decl_ptr);
+            decl_ptr->formals = st_get_ste_from_decl(decl_ptr);
+            scope_push();
+            $$ = decl_ptr;
         }
         | type_specifier pointers ID '('
         {
             decl *func = decl_func($1);
             st_insert($3, func);
             scope_push(); // A new scope for param_list
-            
+            $<decl_ptr>$ = func;
         }
         param_list ')'
+        {
+           if ($6 == NULL) $$ = NULL;
+           else {
+               decl *func = $<decl_ptr>5;
+               func->formals = st_get_ste_from_decl($6);
+               $$ = func;
+           }
+        }
+               
 
 pointers
         : '*' { $$ = "*"; }
         | /* empty */ { $$ = NULL; }
 
 param_list  /* list of formal parameter declaration */
-        : param_decl
+        : param_decl { $$ = $1; }
         | param_list ',' param_decl
+        {
+            $3->next = $1;
+            $$ = $3;
+        }
 
 param_decl  /* formal parameter declaration */
         : type_specifier pointers ID
+        { 
+            if ($2 == NULL) {
+                // Not a pointer
+                if (st_check_redecl($3)) yyerror("redeclaration");
+                else {
+                    decl *var_decl = decl_var($1);
+                    st_insert($3, var_decl);
+                    $$ = var_decl;
+                }
+            }
+            else {
+                // Pointer
+                if (st_check_redecl($3)) yyerror("redeclaration");
+                else {
+                    decl *pointer_decl = decl_pointer($1);
+                    st_insert($3, pointer_decl);
+                    $$ = pointer_decl;
+                }
+            }
+        }
         | type_specifier pointers ID '[' const_expr ']'
 
 def_list    /* list of definitions, definition can be type(struct), variable, function */
@@ -152,7 +194,10 @@ def
 compound_stmt
         : '{'
         {
-            scope_push();
+            if ($<decl_ptr>0->declclass == DECL_FUNC) ;
+            else {
+                scope_push();
+            }
         }
         local_defs stmt_list 
         {
@@ -171,7 +216,30 @@ stmt
         : expr ';'
         | compound_stmt
         | RETURN ';'
+        {
+           // Type checking: func rettype must be void
+           scope *func_scope = current_scope->prev;
+           decl *func_decl = func_scope->boundary->decl_ptr;
+           if (st_check_rettype_void(func_decl)) printf("RETURN match!\n");
+           else {
+               yyerror("incompatible return types");
+           }
+        }
         | RETURN expr ';'
+        {
+            if ($2 == NULL) ;
+            else {
+                // Type checking: func rettype must equal the type of expr
+                scope *func_scope = current_scope->prev;
+                decl *func_decl = func_scope->boundary->decl_ptr;
+                decl *expr_decl = $2;
+                if (!st_check_iftype(expr_decl)) expr_decl = expr_decl->type;
+                if (st_check_rettype_match(func_decl, expr_decl)) printf("RETURN match!\n");
+                else {
+                    yyerror("incompatible return types");
+                }
+            }
+        }
         | ';'
         | IF '(' expr ')' stmt
         | IF '(' expr ')' stmt ELSE stmt
@@ -498,11 +566,70 @@ unary
         | unary '.' ID
         | unary STRUCTOP ID
         | unary '(' args ')'
+        {
+            if ($1 == NULL) $$ = NULL;
+            else {
+                // Type checking: (1) unary must be a function
+                // (2) type of args should match
+                if (st_check_iffunc($1)) {
+                    // Function
+                    ste *func_ste = st_get_ste_from_decl($1);
+                    ste *ste_iter = $1->formals;
+                    decl *decl_iter = $3;
+                    int match = 1;
+                    while (ste_iter != func_ste) {
+                        if (decl_iter == NULL) {
+                                match = 0;
+                                break;
+                        }
+                        if (!st_check_type_compat(decl_iter->type, ste_iter->decl_ptr->type)) {
+                            match = 0;
+                            break;
+                        }
+                        ste_iter = ste_iter->prev;
+                        decl_iter = decl_iter->next;
+                    }
+                    if (decl_iter != NULL) match = 0;
+                    if (match == 0) {
+                        yyerror("actual args are not equal to formal args");
+                        $$ = NULL;
+                    }
+                    else {
+                        $$ = func_ste->decl_ptr->returntype;
+                        printf("Args match!\n");
+                    }
+                }
+                else {
+                    yyerror("not a function");
+                    $$ = NULL;
+                }
+            }
+        }
         | unary '(' ')'
+        {
+            if ($1 == NULL) $$ = NULL;
+            else {
+                // Type checking: func should have no parameters
+                ste *func_ste = st_get_ste_from_decl($1);
+                ste *ste_iter = $1->formals;
+                if (func_ste == ste_iter) {
+                    printf("Args match!\n");
+                    $$ = func_ste->decl_ptr->returntype;
+                }
+                else {
+                    yyerror("actual args are not equal to formal args");
+                    $$ = NULL;
+                }
+            }
+        }
 
 args    /* actual parameters(function arguments) transferred to function */
-        : expr
-        | args ',' expr
+        : expr { REDUCE("args->expr"); $$ = $1; 
+        decl *decl_ptr = $1;
+        if (!st_check_iftype(decl_ptr)) decl_ptr = decl_ptr->type;
+        printf("TYPE: %d\n", decl_ptr->typeclass);
+        }
+        | args ',' expr { REDUCE("args->args , expr"); $3->next = $1; $$ = $3; }
     
 %%
 

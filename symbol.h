@@ -21,7 +21,7 @@ typedef struct scope scope;
 #include "subc.h"
 #include "declaration.h"
 
-#define TYPE_SIZE 2
+#define TYPE_SIZE 3
 
 /// Struct definition
 // Symbol table 
@@ -68,6 +68,10 @@ int st_check_ifchar(decl *decl_ptr);
 int st_check_ifpointer(decl *decl_ptr);
 int st_check_array_index_range(decl *type, decl *const_decl);
 int st_check_ifarray(decl *decl_ptr);
+
+int st_check_rettype_match(decl *func_decl, decl *expr_type);
+int st_check_rettype_void(decl *func_decl);
+int st_check_iffunc(decl *decl_ptr);
 
 // Scope functions
 void scope_initialize();

@@ -12,7 +12,7 @@
 
 #include "symbol.h"
 
-char *st_type_list[TYPE_SIZE] = { "int", "char" };
+char *st_type_list[TYPE_SIZE] = { "int", "char", "void" };
 
 
 /// @brief Initialize symbol table
@@ -233,6 +233,14 @@ int st_check_iftype(decl *decl_ptr) {
 }
 
 
+/// @brief Check if given decl is FUNC
+/// @param decl* to check
+/// @retval 1 if FUNC, 0 if not FUNC
+int st_check_iffunc(decl *decl_ptr) {
+    return decl_ptr->declclass == DECL_FUNC;
+}
+
+
 /// @brief Check if two decl have compatible types
 /// @param decl* decls to check
 /// @retval 1 if compatible, 0 if not compatible
@@ -312,4 +320,37 @@ int st_check_both_same_pointers(decl *decl_ptr1, decl *decl_ptr2) {
 /// @retval 1 if in range, 0 if not
 int st_check_array_index_range(decl *type, decl *const_decl) {
     return const_decl->value < type->num_index;
+}
+
+
+/// @brief Check if function return type is void
+/// @param decl* of func decl
+/// @retval 1 if rettype is void, 0 if not
+int st_check_rettype_void(decl *func_decl) {
+    return func_decl->returntype->typeclass == 4;
+}
+
+
+/// @brief Check if function return type matches the type of expr
+/// @param decl* of func decl, expr type
+/// @retval 1 if match, 0 if not
+int st_check_rettype_match(decl *func_decl, decl *expr_type) {
+    if (func_decl->returntype->typeclass == 4) {
+        // return type: void
+        return 0;
+    }
+    else if (func_decl->returntype->typeclass == 3) {
+        // return type: char
+        return expr_type->typeclass == 3;
+    }
+    else if (func_decl->returntype->typeclass == 2) {
+        // return type: int
+        return expr_type->typeclass == 2;
+    }
+    else if (func_decl->returntype->typeclass == 0) {
+        // return type pointer
+        return func_decl->returntype->ptrto->type->typeclass ==
+               expr_type->ptrto->type->typeclass;
+    }
+    else return 0;
 }
