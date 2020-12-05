@@ -33,7 +33,7 @@ typedef struct declaration{
     int value;
     float real_value;
     struct symbol_table_entry *formals;
-    struct symbol_table_entry *returntype;
+    struct declaration *returntype;
     int typeclass;
     struct declaration *elementvar;
     int num_index;
@@ -53,6 +53,7 @@ typedef struct declaration{
 /// Function declarations
 decl *decl_type(id *);
 decl *decl_var(decl *type_decl);
+decl *decl_func(decl *type_decl);
 int _get_size(id *);
 int decl_is_type(decl *);
 

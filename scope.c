@@ -17,33 +17,39 @@ void scope_initialize() {
     // Set global current_scope and type_scope
     current_scope = type_sc;
     type_scope = type_sc;
+    
+    scope_push();
 }
 
 
-/// @brief Push the address of the real tail of the symbol table
+/// @brief Push the address of the current_scope's boundary
+/// @brief and make current_scope point to the new scope
 /// @param
 /// @retval
 void scope_push() {
-    ste *tail = st_tail;
-    tail = tail->prev;
+    ste *boundary = current_scope->boundary;
     
     scope *new_scope = malloc(sizeof(scope));
     if (new_scope == NULL) printf("malloc error in scope_push()\n");
     
     new_scope->prev = current_scope;
-    new_scope->boundary = tail;
+    new_scope->boundary = boundary;
     
     current_scope = new_scope;
 }
 
 
 /// @brief Pop scope
+/// @brief Set st_tail to the next ste of the ste of the boundary of prev scope
 /// @param
 /// @retval
 void scope_pop() {
     scope *prev_scope = current_scope;
     current_scope = prev_scope->prev;
     free(prev_scope);
+    
+    ste *curr_ste = current_scope->boundary;
+    st_tail->prev = curr_ste;
 }
 
 

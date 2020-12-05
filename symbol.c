@@ -99,12 +99,29 @@ void st_print() {
         printf("------------------------------\n");
         printf("ID  : %p, %s", st_iter->id_ptr, st_iter->id_ptr->name);
         printf("\n");
-        printf("DECL: %p, %d", st_iter->decl_ptr, st_iter->decl_ptr->declclass);
-        printf("\n");
-        if (st_iter->decl_ptr->declclass == DECL_VAR) {
-            printf("TYPE: %p", st_iter->decl_ptr->type);
-            printf("\n");
+        
+        decl *decl_ptr = st_iter->decl_ptr;
+        if (decl_ptr->declclass == DECL_VAR) {
+            // variable
+            printf("DECL: %p, VAR\n", decl_ptr);
+            printf("TYPE: %p, %s\n", decl_ptr->type,
+            st_get_ste_from_decl(decl_ptr->type)->id_ptr->name);
         }
+        else if (decl_ptr->declclass == DECL_CONST) {
+            // constant
+        }
+        else if (decl_ptr->declclass == DECL_FUNC) {
+            // function
+            printf("DECL: %p, FUNC\n", decl_ptr);
+            printf("FORM: %p\n", decl_ptr->formals);
+            printf("RETT: %p, %s\n", decl_ptr->returntype,
+            st_get_ste_from_decl(decl_ptr->returntype)->id_ptr->name);
+        }
+        else {
+            // type
+            printf("DECL: %p, TYPE\n", decl_ptr);
+        }
+        
         printf("------------------------------\n");
         printf("               |              \n");
         printf("               V              \n");
@@ -152,10 +169,10 @@ ste *st_get_ste_from_decl(decl *decl_ptr) {
 /// @param id_ptr to check for
 /// @retval 1 if exists, 0 if not
 int st_check_redecl(id *id_ptr) {
-    ste *st_iter = st_tail;
-    st_iter = st_iter->prev;
+    ste *st_iter = current_scope->boundary;
+    ste *end = current_scope->prev->boundary;
     
-    while(st_iter != st_head) {
+    while(st_iter != end) {
         if (st_iter->id_ptr == id_ptr) return 1;
         st_iter = st_iter->prev;
     }
@@ -169,10 +186,10 @@ int st_check_redecl(id *id_ptr) {
 /// @param id_ptr to check for
 /// @retval 1 if declared, 0 if not
 int st_check_ifdecl(id *id_ptr) {
-    ste *st_iter = st_tail;
-    st_iter = st_iter->prev;
+    ste *st_iter = current_scope->boundary;
+    ste *end = current_scope->prev->boundary;
     
-    while(st_iter != st_head) {
+    while(st_iter != end) {
         if (st_iter->id_ptr == id_ptr) return 1;
         st_iter = st_iter->prev;
     }

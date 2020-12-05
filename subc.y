@@ -58,6 +58,12 @@ ext_def_list
 
 ext_def
         : type_specifier pointers ID ';'
+        {
+            if (st_check_redecl($3)) yyerror("redeclaration");
+            else {
+                st_insert($3, decl_var($1));
+            }
+        }
         | type_specifier pointers ID '[' const_expr ']' ';'
         | func_decl ';'
         | type_specifier ';'
@@ -65,8 +71,7 @@ ext_def
 
 type_specifier
         : TYPE { 
-            decl *decl_ptr = st_decl_from_id($1);
-            $$ = decl_ptr;
+            $$ = st_decl_from_id($1);
          }
         | VOID
         | struct_specifier
@@ -77,8 +82,18 @@ struct_specifier
 
 func_decl
         : type_specifier pointers ID '(' ')'
+        {
+            st_insert($3, decl_func($1));
+        }
         | type_specifier pointers ID '(' VOID ')'
-        | type_specifier pointers ID '(' param_list ')'
+        | type_specifier pointers ID '('
+        {
+            decl *func = decl_func($1);
+            st_insert($3, func);
+            scope_push(); // A new scope for param_list
+            
+        }
+        param_list ')'
 
 pointers
         : '*'
@@ -100,14 +115,24 @@ def
         : type_specifier pointers ID ';' { 
             // REDUCE("def->type_specifier pointers ID ;");
             if (st_check_redecl($3)) yyerror("redeclaration");
-            else st_declare($3, $1);
+            else {
+                st_insert($3, decl_var($1));
+            }
         }
         | type_specifier pointers ID '[' const_expr ']' ';'
         | type_specifier ';'
         | func_decl ';'
 
 compound_stmt
-        : '{' local_defs stmt_list '}'
+        : '{'
+        {
+            scope_push();
+        }
+        local_defs stmt_list 
+        {
+            scope_pop();
+        }
+        '}'
 
 local_defs  /* local definitions, of which scope is only inside of compound statement */
         :   def_list

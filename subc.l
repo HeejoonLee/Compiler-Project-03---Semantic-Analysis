@@ -54,7 +54,14 @@ operator       [-,;\[\]\*()\{\}=\|&\/%\+!]
 {operator} { return yytext[0]; }
 
 {white-space}
-<*>\n		   ++lineno;
+<*>\n		   {
+    ++lineno;
+    if (lineno == 12) {
+        printf("LINE: %3d\n", lineno);
+        scope_print();
+        st_print();
+    }
+}
 <INITIAL,COMMENT>"/*"	{
 		   ++comment_depth;
 		   BEGIN (COMMENT);
@@ -102,5 +109,6 @@ int main(int argc, char* argv[])
    fclose(yyin);
    
    st_print();
+   scope_print();
    return 0;
 }
