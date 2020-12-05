@@ -221,6 +221,21 @@ or_expr
 
 or_list
         : or_list LOGICAL_OR and_expr
+        {
+            // Type checking: Both operands must be int
+            if (($1 == NULL) || ($3 == NULL)) $$ = NULL;
+            else {
+                decl *lhs_type = $1;
+                decl *rhs_type = $3;
+                if (!st_check_iftype(lhs_type)) lhs_type = lhs_type->type;
+                if (!st_check_iftype(rhs_type)) rhs_type = rhs_type->type;
+                if (st_check_bothint(lhs_type, rhs_type)) $$ = lhs_type;
+                else {
+                    yyerror("not computable");
+                    $$ = NULL;
+                }
+            }
+        }
         | and_expr { $$ = $1; }
 
 and_expr
@@ -228,6 +243,21 @@ and_expr
 
 and_list
         : and_list LOGICAL_AND binary
+        {
+            // Type checking: Both operands must be int
+            if (($1 == NULL) || ($3 == NULL)) $$ = NULL;
+            else {
+                decl *lhs_type = $1;
+                decl *rhs_type = $3;
+                if (!st_check_iftype(lhs_type)) lhs_type = lhs_type->type;
+                if (!st_check_iftype(rhs_type)) rhs_type = rhs_type->type;
+                if (st_check_bothint(lhs_type, rhs_type)) $$ = lhs_type;
+                else {
+                    yyerror("not computable");
+                    $$ = NULL;
+                }
+            }
+        }
         | binary { $$ = $1; }
 
 binary
@@ -288,6 +318,15 @@ unary
             }
         } %prec '!'
         | '!' unary
+        {
+            // Type checking: int
+            decl *type_decl = $2->type;
+            if (st_check_ifint(type_decl)) $$ = type_decl;
+            else {
+                yyerror("not computable");
+                $$ = NULL;
+            }
+        }
         | unary INCOP
         | unary DECOP
         | INCOP unary
