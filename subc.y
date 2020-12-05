@@ -234,7 +234,31 @@ binary
         : binary RELOP binary
         | binary EQUOP binary
         | binary '+' binary
+        {
+            // Type checking: Both operands must be int
+            decl *lhs_type = $1;
+            decl *rhs_type = $3;
+            if (!st_check_iftype(lhs_type)) lhs_type = lhs_type->type;
+            if (!st_check_iftype(rhs_type)) rhs_type = rhs_type->type;
+            if (st_check_bothint(lhs_type, rhs_type)) $$ = lhs_type;
+            else {
+                yyerror("not computable");
+                $$ = NULL;
+            }
+        }
         | binary '-' binary
+        {
+            // Type checking: Both operands must be int
+            decl *lhs_type = $1;
+            decl *rhs_type = $3;
+            if (!st_check_iftype(lhs_type)) lhs_type = lhs_type->type;
+            if (!st_check_iftype(rhs_type)) rhs_type = rhs_type->type;
+            if (st_check_bothint(lhs_type, rhs_type)) $$ = lhs_type;
+            else {
+                yyerror("not computable");
+                $$ = NULL;
+            }
+        }
         | unary { $$ = $1; } %prec '='
 
 unary

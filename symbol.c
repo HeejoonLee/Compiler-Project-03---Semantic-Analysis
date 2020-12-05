@@ -240,3 +240,11 @@ int st_check_type_compat(decl *decl_ptr1, decl *decl_ptr2) {
 // TODO: More complex if we consider pointers and arrays
     return decl_ptr1->typeclass == decl_ptr2->typeclass;
 }
+
+
+/// @brief Check if two decl are both int
+/// @param decl* decls to check
+/// @retval 1 if both are int, 0 if not
+int st_check_bothint(decl *decl_ptr1, decl *decl_ptr2) {
+    return (decl_ptr1->typeclass == 2) && (decl_ptr2->typeclass == 2);
+}
