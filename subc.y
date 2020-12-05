@@ -277,7 +277,16 @@ unary
                 $$ = NULL;
             }
         }
-        | '-' unary %prec '!'
+        | '-' unary 
+        {
+            // Type checking: int
+            decl *type_decl = $2->type;
+            if (st_check_ifint(type_decl)) $$ = type_decl;
+            else {
+                yyerror("not computable");
+                $$ = NULL;
+            }
+        } %prec '!'
         | '!' unary
         | unary INCOP
         | unary DECOP
