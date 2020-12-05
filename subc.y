@@ -195,9 +195,10 @@ expr
             else {
                 if (st_check_ifvar($1)) {
                     // LHS is var
-                    decl *lhs_type = $1->type;
+                    decl *lhs_type = $1;
                     decl *rhs_type = $3;
-                    if (!st_check_iftype($3)) rhs_type = $3->type;
+                    if (!st_check_iftype(rhs_type)) rhs_type = rhs_type->type;
+                    if (!st_check_iftype(lhs_type)) lhs_type = lhs_type->type;
                     if (st_check_type_compat(lhs_type, rhs_type)) {
                         // LHS and RHS are compatible
                         printf("LHS and RHS are compatible\n");
@@ -349,7 +350,8 @@ unary
         | '-' unary 
         {
             // Type checking: int
-            decl *type_decl = $2->type;
+            decl *type_decl = $2;
+            if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
             if (st_check_ifint(type_decl)) $$ = type_decl;
             else {
                 yyerror("not computable");
@@ -359,7 +361,8 @@ unary
         | '!' unary
         {
             // Type checking: int
-            decl *type_decl = $2->type;
+            decl *type_decl = $2;
+            if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
             if (st_check_ifint(type_decl)) $$ = type_decl;
             else {
                 yyerror("not computable");
@@ -369,7 +372,8 @@ unary
         | unary INCOP
         {
             // Type checking: int, char
-            decl *type_decl = $1->type;
+            decl *type_decl = $1;
+            if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
             if (st_check_ifint(type_decl) || st_check_ifchar(type_decl))
                 $$ = type_decl;
             else {
@@ -380,7 +384,8 @@ unary
         | unary DECOP
         {
             // Type checking: int, char
-            decl *type_decl = $1->type;
+            decl *type_decl = $1;
+            if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
             if (st_check_ifint(type_decl) || st_check_ifchar(type_decl))
                 $$ = type_decl;
             else {
@@ -391,7 +396,8 @@ unary
         | INCOP unary
         {
             // Type checking: int, char
-            decl *type_decl = $2->type;
+            decl *type_decl = $2;
+            if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
             if (st_check_ifint(type_decl) || st_check_ifchar(type_decl))
                 $$ = type_decl;
             else {
@@ -402,7 +408,8 @@ unary
         | DECOP unary
         {
             // Type checking: int, char
-            decl *type_decl = $2->type;
+            decl *type_decl = $2;
+            if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
             if (st_check_ifint(type_decl) || st_check_ifchar(type_decl))
                 $$ = type_decl;
             else {
@@ -411,7 +418,28 @@ unary
             }
         }
         | '&' unary %prec '!'
+        {
+            // Type checking: variable
+            decl *type_decl = $2;
+            if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
+            if (st_check_ifint(type_decl) ||
+                st_check_ifchar(type_decl)) $$ = decl_pointer(type_decl)->type;
+            else {
+                yyerror("not a variable");
+                $$ = NULL;
+            }
+        }
         | '*' unary %prec '!'
+        {
+            // Type checking: pointer
+            decl *type_decl = $2;
+            if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
+            if (st_check_ifpointer(type_decl)) $$ = type_decl->ptrto->type;
+            else {
+                yyerror("not a pointer");
+                $$ = NULL;
+            }
+        }
         | unary '[' expr ']'
         | unary '.' ID
         | unary STRUCTOP ID

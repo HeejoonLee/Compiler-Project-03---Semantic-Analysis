@@ -237,8 +237,15 @@ int st_check_iftype(decl *decl_ptr) {
 /// @param decl* decls to check
 /// @retval 1 if compatible, 0 if not compatible
 int st_check_type_compat(decl *decl_ptr1, decl *decl_ptr2) {
-// TODO: More complex if we consider pointers and arrays
-    return decl_ptr1->typeclass == decl_ptr2->typeclass;
+    // 1. Both int
+    // 2. Both char
+    // 3. Both pointer of same type
+    if ((decl_ptr1->typeclass == 2) && (decl_ptr2->typeclass == 2)) return 1;
+    else if ((decl_ptr1->typeclass == 3) && (decl_ptr2->typeclass == 3)) return 1;
+    else if ((decl_ptr1->typeclass == 0) && (decl_ptr2->typeclass == 0)) {
+        return decl_ptr1->ptrto->type->typeclass == decl_ptr2->ptrto->type->typeclass;
+    }
+    else return 0;
 }
 
 
@@ -274,9 +281,19 @@ int st_check_ifchar(decl *decl_ptr) {
 }
 
 
+/// @brief Check if decl is pointer
+/// @param decl* to check
+/// @retval 1 if pointer, 0 if not pointer
+int st_check_ifpointer(decl *decl_ptr) {
+    return decl_ptr->typeclass == 0;
+}
+
+
 /// @brief Check if both decls are the same pointer of same type
 /// @param decl*s to check
 /// @retval 1 if pointer of the same type, 0 if not
 int st_check_both_same_pointers(decl *decl_ptr1, decl *decl_ptr2) {
-    return decl_ptr1->ptrto->type->typeclass == decl_ptr2->ptrto->type->typeclass;
+    if ((decl_ptr1->typeclass == 0) && (decl_ptr2->typeclass == 0))
+        return decl_ptr1->ptrto->type->typeclass == decl_ptr2->ptrto->type->typeclass;
+    else return 0;
 }
