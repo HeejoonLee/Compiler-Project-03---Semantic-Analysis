@@ -66,6 +66,8 @@ int st_check_both_same_pointers(decl *decl_ptr1, decl *decl_ptr2);
 int st_check_ifint(decl *decl_ptr);
 int st_check_ifchar(decl *decl_ptr);
 int st_check_ifpointer(decl *decl_ptr);
+int st_check_array_index_range(decl *type, decl *const_decl);
+int st_check_ifarray(decl *decl_ptr);
 
 // Scope functions
 void scope_initialize();

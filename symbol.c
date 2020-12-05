@@ -289,6 +289,14 @@ int st_check_ifpointer(decl *decl_ptr) {
 }
 
 
+/// @brief Check if decl is array
+/// @param decl* to check
+/// @retval 1 if array, 0 if not array
+int st_check_ifarray(decl *decl_ptr) {
+    return decl_ptr->typeclass == 1;
+}
+
+
 /// @brief Check if both decls are the same pointer of same type
 /// @param decl*s to check
 /// @retval 1 if pointer of the same type, 0 if not
@@ -296,4 +304,12 @@ int st_check_both_same_pointers(decl *decl_ptr1, decl *decl_ptr2) {
     if ((decl_ptr1->typeclass == 0) && (decl_ptr2->typeclass == 0))
         return decl_ptr1->ptrto->type->typeclass == decl_ptr2->ptrto->type->typeclass;
     else return 0;
+}
+
+
+/// @brief Check if array index is in range
+/// @param decl* array_type, decl* const_decl
+/// @retval 1 if in range, 0 if not
+int st_check_array_index_range(decl *type, decl *const_decl) {
+    return const_decl->value < type->num_index;
 }

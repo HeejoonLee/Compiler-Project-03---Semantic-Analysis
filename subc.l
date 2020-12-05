@@ -56,13 +56,13 @@ operator       [-,;\[\]\*()\{\}=\|&\/%\+!]
 {white-space}
 <*>\n		   {
     ++lineno;
-/*
-    if (lineno == 31) {
+
+    if (lineno == 8) {
         printf("LINE: %3d\n", lineno);
         scope_print();
         st_print();
     }
-*/
+
 }
 <INITIAL,COMMENT>"/*"	{
 		   ++comment_depth;

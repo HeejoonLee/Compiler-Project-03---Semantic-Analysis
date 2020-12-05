@@ -87,6 +87,9 @@ func_decl
             st_insert($3, decl_func($1));
         }
         | type_specifier pointers ID '(' VOID ')'
+        {
+            st_insert($3, decl_func($1));
+        }
         | type_specifier pointers ID '('
         {
             decl *func = decl_func($1);
@@ -305,28 +308,34 @@ binary
         }
         | binary '+' binary
         {
-            // Type checking: Both operands must be int
-            decl *lhs_type = $1;
-            decl *rhs_type = $3;
-            if (!st_check_iftype(lhs_type)) lhs_type = lhs_type->type;
-            if (!st_check_iftype(rhs_type)) rhs_type = rhs_type->type;
-            if (st_check_bothint(lhs_type, rhs_type)) $$ = lhs_type;
+            if (($1 == NULL) || ($3 == NULL)) $$ = NULL;
             else {
-                yyerror("not computable");
-                $$ = NULL;
+                // Type checking: Both operands must be int
+                decl *lhs_type = $1;
+                decl *rhs_type = $3;
+                if (!st_check_iftype(lhs_type)) lhs_type = lhs_type->type;
+                if (!st_check_iftype(rhs_type)) rhs_type = rhs_type->type;
+                if (st_check_bothint(lhs_type, rhs_type)) $$ = lhs_type;
+                else {
+                    yyerror("not computable");
+                    $$ = NULL;
+                }
             }
         }
         | binary '-' binary
         {
-            // Type checking: Both operands must be int
-            decl *lhs_type = $1;
-            decl *rhs_type = $3;
-            if (!st_check_iftype(lhs_type)) lhs_type = lhs_type->type;
-            if (!st_check_iftype(rhs_type)) rhs_type = rhs_type->type;
-            if (st_check_bothint(lhs_type, rhs_type)) $$ = lhs_type;
+            if (($1 == NULL) || ($3 == NULL)) $$ = NULL;
             else {
-                yyerror("not computable");
-                $$ = NULL;
+                // Type checking: Both operands must be int
+                decl *lhs_type = $1;
+                decl *rhs_type = $3;
+                if (!st_check_iftype(lhs_type)) lhs_type = lhs_type->type;
+                if (!st_check_iftype(rhs_type)) rhs_type = rhs_type->type;
+                if (st_check_bothint(lhs_type, rhs_type)) $$ = lhs_type;
+                else {
+                    yyerror("not computable");
+                    $$ = NULL;
+                }
             }
         }
         | unary { $$ = $1; } %prec '='
@@ -349,98 +358,143 @@ unary
         }
         | '-' unary 
         {
-            // Type checking: int
-            decl *type_decl = $2;
-            if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
-            if (st_check_ifint(type_decl)) $$ = type_decl;
+            if ($2 == NULL) $$ = NULL;
             else {
-                yyerror("not computable");
-                $$ = NULL;
+                // Type checking: int
+                decl *type_decl = $2;
+                if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
+                if (st_check_ifint(type_decl)) $$ = type_decl;
+                else {
+                    yyerror("not computable");
+                    $$ = NULL;
+                }
             }
         } %prec '!'
         | '!' unary
         {
-            // Type checking: int
-            decl *type_decl = $2;
-            if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
-            if (st_check_ifint(type_decl)) $$ = type_decl;
+            if ($2 == NULL) $$ = NULL;
             else {
-                yyerror("not computable");
-                $$ = NULL;
+                // Type checking: int
+                decl *type_decl = $2;
+                if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
+                if (st_check_ifint(type_decl)) $$ = type_decl;
+                else {
+                    yyerror("not computable");
+                    $$ = NULL;
+                }
             }
         }
         | unary INCOP
         {
-            // Type checking: int, char
-            decl *type_decl = $1;
-            if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
-            if (st_check_ifint(type_decl) || st_check_ifchar(type_decl))
-                $$ = type_decl;
+            if ($1 == NULL) $$ = NULL;
             else {
-                yyerror("not computable");
-                $$ = NULL;
+                // Type checking: int, char
+                decl *type_decl = $1;
+                if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
+                if (st_check_ifint(type_decl) || st_check_ifchar(type_decl))
+                    $$ = type_decl;
+                else {
+                    yyerror("not computable");
+                    $$ = NULL;
+                }
             }
         }
         | unary DECOP
         {
-            // Type checking: int, char
-            decl *type_decl = $1;
-            if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
-            if (st_check_ifint(type_decl) || st_check_ifchar(type_decl))
-                $$ = type_decl;
+            if ($1 == NULL) $$ = NULL;
             else {
-                yyerror("not computable");
-                $$ = NULL;
+                // Type checking: int, char
+                decl *type_decl = $1;
+                if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
+                if (st_check_ifint(type_decl) || st_check_ifchar(type_decl))
+                    $$ = type_decl;
+                else {
+                    yyerror("not computable");
+                    $$ = NULL;
+                }
             }
         }
         | INCOP unary
         {
-            // Type checking: int, char
-            decl *type_decl = $2;
-            if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
-            if (st_check_ifint(type_decl) || st_check_ifchar(type_decl))
-                $$ = type_decl;
+            if ($2 == NULL) $$ = NULL;
             else {
-                yyerror("not computable");
-                $$ = NULL;
+                // Type checking: int, char
+                decl *type_decl = $2;
+                if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
+                if (st_check_ifint(type_decl) || st_check_ifchar(type_decl))
+                    $$ = type_decl;
+                else {
+                    yyerror("not computable");
+                    $$ = NULL;
+                }
             }
         }
         | DECOP unary
         {
-            // Type checking: int, char
-            decl *type_decl = $2;
-            if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
-            if (st_check_ifint(type_decl) || st_check_ifchar(type_decl))
-                $$ = type_decl;
+            if ($2 == NULL) $$ = NULL;
             else {
-                yyerror("not computable");
-                $$ = NULL;
+                // Type checking: int, char
+                decl *type_decl = $2;
+                if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
+                if (st_check_ifint(type_decl) || st_check_ifchar(type_decl))
+                    $$ = type_decl;
+                else {
+                    yyerror("not computable");
+                    $$ = NULL;
+                }
             }
         }
         | '&' unary %prec '!'
         {
-            // Type checking: variable
-            decl *type_decl = $2;
-            if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
-            if (st_check_ifint(type_decl) ||
-                st_check_ifchar(type_decl)) $$ = decl_pointer(type_decl)->type;
+            if ($2 == NULL) $$ = NULL;
             else {
-                yyerror("not a variable");
-                $$ = NULL;
+                // Type checking: variable
+                decl *type_decl = $2;
+                if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
+                if (st_check_ifint(type_decl) ||
+                    st_check_ifchar(type_decl)) $$ = decl_pointer(type_decl)->type;
+                else {
+                    yyerror("not a variable");
+                    $$ = NULL;
+                }
             }
         }
         | '*' unary %prec '!'
         {
-            // Type checking: pointer
-            decl *type_decl = $2;
-            if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
-            if (st_check_ifpointer(type_decl)) $$ = type_decl->ptrto->type;
+            if ($2 == NULL) $$ = NULL;
             else {
-                yyerror("not a pointer");
-                $$ = NULL;
+                // Type checking: pointer
+                decl *type_decl = $2;
+                if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
+                if (st_check_ifpointer(type_decl)) $$ = type_decl->ptrto->type;
+                else {
+                    yyerror("not a pointer");
+                    $$ = NULL;
+                }
             }
         }
         | unary '[' expr ']'
+        {
+            if (($1 == NULL) || ($3 == NULL)) $$ = NULL;
+            else {
+                // Type checking: array
+                decl *type_decl = $1;
+                if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
+                if (st_check_ifarray(type_decl)) {
+                    // array
+                    if(st_check_array_index_range(type_decl, $3)) 
+                        $$ = type_decl->elementvar;
+                    else {
+                        yyerror("array index out of range");
+                        $$ = NULL;
+                    }
+                }
+                else {
+                    yyerror("not an array type");
+                    $$ = NULL;
+                }
+            }
+        }
         | unary '.' ID
         | unary STRUCTOP ID
         | unary '(' args ')'
