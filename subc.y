@@ -97,7 +97,8 @@ def_list    /* list of definitions, definition can be type(struct), variable, fu
 def
         : type_specifier pointers ID ';' { 
             REDUCE("def->type_specifier pointers ID ;");
-            st_declare($3, $1);
+            if (st_check_redecl($3)) printf("Error: redeclaration\n");
+            else st_declare($3, $1);
         }
         | type_specifier pointers ID '[' const_expr ']' ';'
         | type_specifier ';'

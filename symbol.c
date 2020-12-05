@@ -129,3 +129,20 @@ decl *st_decl_from_id(id *id_ptr) {
     // No such id found in the symbol table
     return NULL;
 }
+
+
+/// @brief Check if there already exists a ste with the same id_ptr
+/// @param id_ptr to check for
+/// @retval 1 if exists, 0 if not
+int st_check_redecl(id *id_ptr) {
+    ste *st_iter = st_tail;
+    st_iter = st_iter->prev;
+    
+    while(st_iter != st_head) {
+        if (st_iter->id_ptr == id_ptr) return 1;
+        st_iter = st_iter->prev;
+    }
+    
+    // No duplicates
+    return 0;
+}

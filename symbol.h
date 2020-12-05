@@ -53,6 +53,7 @@ void st_print();
 ste *st_insert(id *, decl *);
 ste *st_declare(id *var_id, decl *type_decl);
 decl *st_decl_from_id(id *id_ptr);
+int st_check_redecl(id *id_ptr);
 
 // Scope functions
 void scope_initialize();
