@@ -262,6 +262,25 @@ and_list
 
 binary
         : binary RELOP binary
+        {
+            // Type checking: Both int or both car
+            // Return int type
+            if (($1 == NULL) || ($3 == NULL)) $$ = NULL;
+            else {
+                decl *lhs_type = $1;
+                decl *rhs_type = $3;
+                if (!st_check_iftype(lhs_type)) lhs_type = lhs_type->type;
+                if (!st_check_iftype(rhs_type)) rhs_type = rhs_type->type;
+                if (st_check_bothint(lhs_type, rhs_type) ||
+                    st_check_bothchar(lhs_type, rhs_type)) {
+                    $$ = st_decl_from_id(get_id_from_name("int"));
+                }
+                else {
+                    yyerror("not computable");
+                    $$ = NULL;
+                }
+            }
+        }
         | binary EQUOP binary
         | binary '+' binary
         {

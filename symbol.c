@@ -250,6 +250,14 @@ int st_check_bothint(decl *decl_ptr1, decl *decl_ptr2) {
 }
 
 
+/// @brief Check if two decls are both char
+/// @param decl* decls to check
+/// @retval 1 if both are char, 0 if not
+int st_check_bothchar(decl *decl_ptr1, decl *decl_ptr2) {
+    return (decl_ptr1->typeclass == 3) && (decl_ptr2->typeclass == 3);
+}
+
+
 /// @brief Check if decl is int
 /// @param decl* to check
 /// @retval 1 if int, 0 if not int
