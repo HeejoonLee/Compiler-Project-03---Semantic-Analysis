@@ -186,6 +186,34 @@ const_expr
 
 expr
         : unary '=' expr
+        {
+            // Assignment type checking
+            // 1. Check if LHS is VAR
+            // 2. Check if RHS and LHS are compatible types
+            // 3. Check if RHS is NULL
+            if (($1 == NULL) || ($3 == NULL)) $$ = NULL;
+            else {
+                if (st_check_ifvar($1)) {
+                    // LHS is var
+                    decl *lhs_type = $1->type;
+                    decl *rhs_type = $3;
+                    if (!st_check_iftype($3)) rhs_type = $3->type;
+                    if (st_check_type_compat(lhs_type, rhs_type)) {
+                        // LHS and RHS are compatible
+                        printf("LHS and RHS are compatible\n");
+                        $$ = lhs_type;
+                    }
+                    else {
+                        yyerror("LHS and RHS are not same type");
+                        $$ = NULL;
+                    }
+                }
+                else {
+                    yyerror("LHS is not a variable");
+                    $$ = NULL;
+                }
+            }
+        }
         | or_expr { $$ = $1; }
 
 or_expr
@@ -215,6 +243,7 @@ unary
         | INTEGER_CONST { $$ = decl_int_const($1); }
         | CHAR_CONST { $$ = decl_char_const($1); }
         | STRING
+        | NULLT
         | ID 
         { 
             decl *decl_ptr = st_decl_from_id($1);
@@ -248,7 +277,7 @@ args    /* actual parameters(function arguments) transferred to function */
 
 int    yyerror (char* s)
 {
-    printf("%2d: error: %s\n", read_line(), s);
+    printf("%3d: error: %s\n", read_line(), s);
 }
 
 

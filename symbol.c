@@ -135,7 +135,7 @@ void st_print() {
         }
         else {
             // type
-            printf("DECL: %p, TYPE\n", decl_ptr);
+            printf("TYPE: %p, %d\n", decl_ptr, decl_ptr->typeclass);
         }
         
         printf("------------------------------\n");
@@ -214,4 +214,29 @@ int st_check_ifdecl(id *id_ptr) {
     
     // No declaration
     return 0;
+}
+
+
+/// @brief Check if given decl is VAR
+/// @param decl* to check
+/// @retval 1 if VAR, 0 if not VAR
+int st_check_ifvar(decl *decl_ptr) {
+    return decl_ptr->declclass == DECL_VAR;
+}
+
+
+/// @brief Check if given decl is TYPE
+/// @param decl* to check
+/// @retval 1 if TYPE, 0 if not TYPE
+int st_check_iftype(decl *decl_ptr) {
+    return decl_ptr->declclass == DECL_TYPE;
+}
+
+
+/// @brief Check if two decl have compatible types
+/// @param decl* decls to check
+/// @retval 1 if compatible, 0 if not compatible
+int st_check_type_compat(decl *decl_ptr1, decl *decl_ptr2) {
+// TODO: More complex if we consider pointers and arrays
+    return decl_ptr1->typeclass == decl_ptr2->typeclass;
 }

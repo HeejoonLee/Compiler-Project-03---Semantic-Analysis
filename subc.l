@@ -56,6 +56,7 @@ operator       [-,;\[\]\*()\{\}=\|&\/%\+!]
 {white-space}
 <*>\n		   {
     ++lineno;
+    /*
     if (lineno == 12 || 
         lineno == 15 || 
         lineno == 19) {
@@ -63,6 +64,7 @@ operator       [-,;\[\]\*()\{\}=\|&\/%\+!]
         scope_print();
         st_print();
     }
+    */
 }
 <INITIAL,COMMENT>"/*"	{
 		   ++comment_depth;
@@ -92,7 +94,7 @@ int main(int argc, char* argv[])
    for(i = 0; keyword[i] != NULL; i++)
       enter(tokentype[i], keyword[i], strlen(keyword[i]));
       
-   ht_print();
+   // ht_print();
 
    if(argc >= 2) yyin = fopen(argv[1], "r");
    else yyin = stdin;
@@ -112,6 +114,6 @@ int main(int argc, char* argv[])
    
    st_print();
    scope_print();
-   ht_print();
+   // ht_print();
    return 0;
 }
