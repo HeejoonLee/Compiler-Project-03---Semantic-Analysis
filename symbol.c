@@ -204,7 +204,7 @@ decl *st_decl_from_id(id *id_ptr) {
     }
     
     // No such id found in the symbol table
-    printf("ERROR: No such id in the symbol table\n");
+    //printf("ERROR: No such id in the symbol table\n");
     return NULL;
 }
 
@@ -221,7 +221,7 @@ ste *st_get_ste_from_decl(decl *decl_ptr) {
         st_iter = st_iter->prev;
     }
     
-    printf("Such decl doesn't exist in symbol table\n");
+    //printf("Such decl doesn't exist in symbol table\n");
     return NULL;
 }
 
@@ -292,11 +292,35 @@ int st_check_type_compat(decl *decl_ptr1, decl *decl_ptr2) {
     // 1. Both int
     // 2. Both char
     // 3. Both pointer of same type
+    // 4. Both struct of same type
+    
+    // When LHS is pointer of any type and RHS is NULL
+    if ((decl_ptr1->typeclass == 0) && (decl_ptr2->typeclass == 6)) return 1;
+    
+    // Both int
     if ((decl_ptr1->typeclass == 2) && (decl_ptr2->typeclass == 2)) return 1;
+    
+    // Both char
     else if ((decl_ptr1->typeclass == 3) && (decl_ptr2->typeclass == 3)) return 1;
+    
+    // Both pointers
     else if ((decl_ptr1->typeclass == 0) && (decl_ptr2->typeclass == 0)) {
-        return decl_ptr1->ptrto->type->typeclass == decl_ptr2->ptrto->type->typeclass;
+        if ((decl_ptr1->ptrto->type->typeclass == 5) && (decl_ptr2->ptrto->type->typeclass == 5)) {
+            // Both struct pointers
+            ste *struct_lhs = st_get_ste_from_decl(decl_ptr1->ptrto->type);
+            ste *struct_rhs = st_get_ste_from_decl(decl_ptr2->ptrto->type);
+            return struct_lhs->id_ptr == struct_rhs->id_ptr;
+        }
+        else return decl_ptr1->ptrto->type->typeclass == decl_ptr2->ptrto->type->typeclass;
     }
+    
+    // Both struct of the same type
+    else if ((decl_ptr1->typeclass == 5) && (decl_ptr2->typeclass == 5)) {
+        ste *struct_lhs = st_get_ste_from_decl(decl_ptr1);
+        ste *struct_rhs = st_get_ste_from_decl(decl_ptr2);
+        return struct_lhs->id_ptr == struct_rhs->id_ptr;
+    }
+    
     else return 0;
 }
 

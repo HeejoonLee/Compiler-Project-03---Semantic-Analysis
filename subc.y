@@ -10,6 +10,7 @@
 int    yylex ();
 int    yyerror (char* s);
 void REDUCE(char* s);
+char *buffer;
 
 %}
 
@@ -46,7 +47,7 @@ void REDUCE(char* s);
 %type<stringVal> pointers
 %type<decl_ptr> type_specifier unary binary and_list and_expr
 %type<decl_ptr> or_expr or_list expr const_expr func_decl
-%type<decl_ptr> param_list param_decl args struct_specifier def
+%type<decl_ptr> param_list param_decl args struct_specifier def ext_def
 
 %%
 program
@@ -60,13 +61,41 @@ ext_def_list
 
 ext_def
         : type_specifier pointers ID ';'
-        {
-            if (st_check_redecl($3)) yyerror("redeclaration");
+        { 
+            if ($1 == NULL) $$ = NULL;
             else {
-                st_insert($3, decl_var($1));
+                if ($2 == NULL) {
+                    // Not a pointer
+                    if (st_check_redecl($3)) yyerror("redeclaration");
+                    else {
+                        st_insert($3, decl_var($1));
+                    }
+                }
+                else {
+                    // Pointer
+                    if (st_check_redecl($3)) yyerror("redeclaration");
+                    else {
+                        st_insert($3, decl_pointer($1));
+                    }
+                }
             }
         }
         | type_specifier pointers ID '[' const_expr ']' ';'
+        {
+            if ($1 == NULL) $$ = NULL;
+                else {
+                if ($2 == NULL) {
+                    // Not a pointer
+                    if (st_check_redecl($3)) yyerror("redeclaration");
+                    else st_insert($3, decl_array($1, $5));
+                }
+                else {
+                    // Pointer
+                    if (st_check_redecl($3)) yyerror("redeclaration");
+                    else st_insert($3, decl_pointer_array($1, $5));
+                }
+            }
+        }
         | func_decl ';'
         | type_specifier ';'
         | func_decl compound_stmt
@@ -139,30 +168,57 @@ struct_specifier
 func_decl
         : type_specifier pointers ID '(' ')'
         {
-            decl *decl_ptr = decl_func($1);
-            st_insert($3, decl_ptr);
-            decl_ptr->formals = st_get_ste_from_decl(decl_ptr);
-            scope_push();
-            $$ = decl_ptr;
+            if ($1 == NULL) $$ = NULL;
+            else {
+                if (!st_check_redecl($3)) {
+                    decl *decl_ptr = decl_func($1);
+                    st_insert($3, decl_ptr);
+                    decl_ptr->formals = st_get_ste_from_decl(decl_ptr);
+                    scope_push();
+                    $$ = decl_ptr;
+                }
+                else {
+                    yyerror("redeclaration");
+                    $$ = NULL;
+                }
+            }
         }
         | type_specifier pointers ID '(' VOID ')'
         {
-            decl *decl_ptr = decl_func($1);
-            st_insert($3, decl_ptr);
-            decl_ptr->formals = st_get_ste_from_decl(decl_ptr);
-            scope_push();
-            $$ = decl_ptr;
+            if ($1 == NULL) $$ = NULL;
+            else {
+                if (!st_check_redecl($3)) {
+                    decl *decl_ptr = decl_func($1);
+                    st_insert($3, decl_ptr);
+                    decl_ptr->formals = st_get_ste_from_decl(decl_ptr);
+                    scope_push();
+                    $$ = decl_ptr;
+                }
+                else {
+                    yyerror("redeclaration");
+                    $$ = NULL;
+                }
+            }
         }
         | type_specifier pointers ID '('
         {
-            decl *func = decl_func($1);
-            st_insert($3, func);
-            scope_push(); // A new scope for param_list
-            $<decl_ptr>$ = func;
+            if ($1 == NULL) $<decl_ptr>$ = NULL;
+            else {
+                if (!st_check_redecl($3)) {
+                    decl *func = decl_func($1);
+                    st_insert($3, func);
+                    scope_push(); // A new scope for param_list
+                    $<decl_ptr>$ = func;
+                }
+                else {
+                    yyerror("redeclaration");
+                    $<decl_ptr>$ = NULL;
+                }
+            }
         }
         param_list ')'
         {
-           if ($6 == NULL) $$ = NULL;
+           if ($<decl_ptr>5 == NULL) $$ = NULL;
            else {
                decl *func = $<decl_ptr>5;
                func->formals = st_get_ste_from_decl($6);
@@ -186,26 +242,52 @@ param_list  /* list of formal parameter declaration */
 param_decl  /* formal parameter declaration */
         : type_specifier pointers ID
         { 
-            if ($2 == NULL) {
-                // Not a pointer
-                if (st_check_redecl($3)) yyerror("redeclaration");
-                else {
-                    decl *var_decl = decl_var($1);
-                    st_insert($3, var_decl);
-                    $$ = var_decl;
-                }
-            }
+            if ($1 == NULL) $$ = NULL;
             else {
-                // Pointer
-                if (st_check_redecl($3)) yyerror("redeclaration");
+                if ($2 == NULL) {
+                    // Not a pointer
+                    if (st_check_redecl($3)) yyerror("redeclaration");
+                    else {
+                        decl *var_decl = decl_var($1);
+                        st_insert($3, var_decl);
+                        $$ = var_decl;
+                    }
+                }
                 else {
-                    decl *pointer_decl = decl_pointer($1);
-                    st_insert($3, pointer_decl);
-                    $$ = pointer_decl;
+                    // Pointer
+                    if (st_check_redecl($3)) yyerror("redeclaration");
+                    else {
+                        decl *pointer_decl = decl_pointer($1);
+                        st_insert($3, pointer_decl);
+                        $$ = pointer_decl;
+                    }
                 }
             }
         }
         | type_specifier pointers ID '[' const_expr ']'
+        {
+            if ($1 == NULL) $$ = NULL;
+                else {
+                if ($2 == NULL) {
+                    // Not a pointer
+                    if (st_check_redecl($3)) yyerror("redeclaration");
+                    else {
+                        decl *decl_ptr = decl_array($1, $5);
+                        st_insert($3, decl_ptr);
+                        $$ = decl_ptr;
+                    }
+                }
+                else {
+                    // Pointer
+                    if (st_check_redecl($3)) yyerror("redeclaration");
+                    else {
+                        decl *decl_ptr = decl_pointer_array($1, $5);
+                        st_insert($3, decl_ptr);
+                        $$ = decl_ptr;
+                    }
+                }
+            }
+        }
 
 def_list    /* list of definitions, definition can be type(struct), variable, function */
         : def_list def
@@ -243,17 +325,18 @@ def
                 }
                 else {
                     // Pointer
-                    // TODO
+                    if (st_check_redecl($3)) yyerror("redeclaration");
+                    else st_insert($3, decl_pointer_array($1, $5));
                 }
             }
         }
-        | type_specifier ';'
-        | func_decl ';'
+        | type_specifier ';' { ; }
+        | func_decl ';' { ; }
 
 compound_stmt
         : '{'
         {
-            if ($<decl_ptr>0->declclass == DECL_FUNC) ;
+            if (($<decl_ptr>0 != NULL) && ($<decl_ptr>0->declclass == DECL_FUNC)) ;
             else {
                 scope_push();
             }
@@ -286,7 +369,7 @@ stmt
                 if (scope_iter->boundary->decl_ptr->declclass == DECL_FUNC) {
                     // Found a function
                     if (st_check_rettype_void(scope_iter->boundary->decl_ptr)) {
-                        printf("RETURN match!\n");
+                        // printf("RETURN match!\n");
                         match = 1;
                         break;
                     }
@@ -313,7 +396,7 @@ stmt
                         decl *expr_decl = $2;
                         if (!st_check_iftype(expr_decl)) expr_decl = expr_decl->type;
                         if (st_check_rettype_match(scope_iter->boundary->decl_ptr, expr_decl)) {
-                            printf("RETURN match!\n");
+                            // printf("RETURN match!\n");
                             match = 1;
                             break;
                         }
@@ -360,12 +443,18 @@ expr
                     if (!st_check_iftype(lhs_type)) lhs_type = lhs_type->type;
                     if (st_check_type_compat(lhs_type, rhs_type)) {
                         // LHS and RHS are compatible
-                        printf("LHS and RHS are compatible\n");
+                        // printf("LHS and RHS are compatible\n");
                         $$ = lhs_type;
                     }
                     else {
-                        yyerror("LHS and RHS are not same type");
-                        $$ = NULL;
+                        if (rhs_type->typeclass == 6) {
+                            yyerror("RHS is not a const or variable");
+                            $$ = NULL;
+                        }
+                        else {
+                            yyerror("LHS and RHS are not same type");
+                            $$ = NULL;
+                        }
                     }
                 }
                 else {
@@ -436,7 +525,7 @@ binary
                     $$ = st_decl_from_id(get_id_from_name("int"));
                 }
                 else {
-                    yyerror("not computable");
+                    yyerror("not comparable");
                     $$ = NULL;
                 }
             }
@@ -457,7 +546,7 @@ binary
                     $$ = st_decl_from_id(get_id_from_name("int"));
                 }
                 else {
-                    yyerror("not computable");
+                    yyerror("not comparable");
                     $$ = NULL;
                 }
             }
@@ -501,8 +590,8 @@ unary
         | '(' unary ')' { $$ = $2; }
         | INTEGER_CONST { $$ = decl_int_const($1); }
         | CHAR_CONST { $$ = decl_char_const($1); }
-        | STRING
-        | NULLT
+        | STRING { ; }
+        | NULLT { $$ = decl_null_type(); }
         | ID 
         { 
             decl *decl_ptr = st_decl_from_id($1);
@@ -707,7 +796,7 @@ unary
                     else $$ = st_iter->decl_ptr->type;
                 }
                 else {
-                    yyerror("not a struct");
+                    yyerror("not a struct pointer");
                     $$ = NULL;
                 }
             }
@@ -743,7 +832,7 @@ unary
                     }
                     else {
                         $$ = func_ste->decl_ptr->returntype;
-                        printf("Args match!\n");
+                        // printf("Args match!\n");
                     }
                 }
                 else {
@@ -756,15 +845,22 @@ unary
         {
             if ($1 == NULL) $$ = NULL;
             else {
-                // Type checking: func should have no parameters
-                ste *func_ste = st_get_ste_from_decl($1);
-                ste *ste_iter = $1->formals;
-                if (func_ste == ste_iter) {
-                    printf("Args match!\n");
-                    $$ = func_ste->decl_ptr->returntype;
+                // Type checking: (1) unary must be a function
+                // (2) type of args should match
+                if (st_check_iffunc($1)) {
+                    ste *func_ste = st_get_ste_from_decl($1);
+                    ste *ste_iter = $1->formals;
+                    if (func_ste == ste_iter) {
+                        // printf("Args match!\n");
+                        $$ = func_ste->decl_ptr->returntype;
+                    }
+                    else {
+                        yyerror("actual args are not equal to formal args");
+                        $$ = NULL;
+                    }
                 }
-                else {
-                    yyerror("actual args are not equal to formal args");
+                else  {
+                    yyerror("not a function");
                     $$ = NULL;
                 }
             }
@@ -800,7 +896,7 @@ args    /* actual parameters(function arguments) transferred to function */
 
 int    yyerror (char* s)
 {
-    printf("%3d: error: %s\n", read_line(), s);
+    printf("%s:%3d: error: %s\n", buffer, read_line(), s);
 }
 
 

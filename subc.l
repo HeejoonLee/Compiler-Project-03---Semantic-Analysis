@@ -9,6 +9,8 @@
 static int comment_depth = 0;
 static int lineno = 1;
 
+char *buffer;
+
 %}
 
 /* regular definitions */
@@ -57,9 +59,9 @@ operator       [-.,;\[\]\*()\{\}=\|&\/%\+!]
 <*>\n		   {
     ++lineno;
 /*
-    if (lineno == 27 ||
-        lineno == 30 ||
-        lineno == 33 ) {
+    if (lineno == 11 ||
+        lineno == 12 ||
+        lineno == 13 ) {
         printf("LINE: %3d\n", lineno);
         scope_print();
         st_print();
@@ -95,9 +97,17 @@ int main(int argc, char* argv[])
       enter(tokentype[i], keyword[i], strlen(keyword[i]));
       
    // ht_print();
+   
+   buffer = malloc(100*sizeof(char));
 
-   if(argc >= 2) yyin = fopen(argv[1], "r");
-   else yyin = stdin;
+   if(argc >= 2) {
+       yyin = fopen(argv[1], "r");
+       buffer = argv[1];
+   }
+   else {
+       yyin = stdin;
+       buffer = "\0";
+   }
    if(!yyin) {
       printf("Can't open input stream!\n");
       exit(1);

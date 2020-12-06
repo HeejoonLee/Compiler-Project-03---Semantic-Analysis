@@ -266,6 +266,56 @@ decl *decl_array_type(decl *type_decl, decl *const_decl) {
 }
 
 
+/// @brief Make a new decl of type pointer array
+/// @param decl* type_decl
+/// @param decl* const_decl
+/// @retval decl* of new declaration
+decl *decl_pointer_array(decl *type_decl, decl *const_decl) {
+    decl *new_decl = malloc(sizeof(decl));
+    if (new_decl == NULL) printf("malloc error in decl_pointer_array\n");
+    
+    new_decl->declclass = DECL_CONST;
+    new_decl->type = decl_pointer_array_type(type_decl, const_decl);
+    new_decl->value = 0;
+    new_decl->real_value = 0.0;
+    new_decl->formals = NULL;
+    new_decl->returntype = NULL;
+    new_decl->typeclass = 0;
+    new_decl->elementvar = NULL;
+    new_decl->num_index = 0;
+    new_decl->fieldlist = NULL;
+    new_decl->ptrto = NULL;
+    new_decl->size = 0;
+    new_decl->scope = NULL;
+    new_decl->next = NULL;
+    
+    return new_decl;
+}
+
+
+decl *decl_pointer_array_type(decl *type_decl, decl *const_decl) {
+    decl *new_decl = malloc(sizeof(decl));
+    if (new_decl == NULL) printf("malloc error in decl_pointer_array_type\n");
+    
+    new_decl->declclass = DECL_TYPE;
+    new_decl->type = NULL;
+    new_decl->value = 0;
+    new_decl->real_value = 0.0;
+    new_decl->formals = NULL;
+    new_decl->returntype = NULL;
+    new_decl->typeclass = 1; // array
+    new_decl->elementvar = decl_pointer(type_decl);
+    new_decl->num_index = const_decl->value;
+    new_decl->fieldlist = NULL;
+    new_decl->ptrto = NULL;
+    new_decl->size = 0;
+    new_decl->scope = NULL;
+    new_decl->next = NULL;
+    
+    return new_decl;
+}
+
+
 /// @brief Make a type decl with given type_decl
 /// @param decl* of type_decl
 /// @retval decl* of new declaration
@@ -309,6 +359,32 @@ decl *decl_struct_type(ste *fields) {
     new_decl->elementvar = NULL;
     new_decl->num_index = 0;
     new_decl->fieldlist = fields;
+    new_decl->ptrto = NULL;
+    new_decl->size = 0;
+    new_decl->scope = NULL;
+    new_decl->next = NULL;
+    
+    return new_decl;
+}
+
+
+/// @brief Make a null type decl
+/// @param 
+/// @retval decl* of new decl
+decl *decl_null_type() {
+    decl *new_decl = malloc(sizeof(decl));
+    if (new_decl == NULL) printf("malloc error in decl_array_type\n");
+    
+    new_decl->declclass = DECL_TYPE;
+    new_decl->type = NULL;
+    new_decl->value = 0;
+    new_decl->real_value = 0.0;
+    new_decl->formals = NULL;
+    new_decl->returntype = NULL;
+    new_decl->typeclass = 6; // null
+    new_decl->elementvar = NULL;
+    new_decl->num_index = 0;
+    new_decl->fieldlist = NULL;
     new_decl->ptrto = NULL;
     new_decl->size = 0;
     new_decl->scope = NULL;
