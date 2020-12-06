@@ -277,26 +277,55 @@ stmt
         | RETURN ';'
         {
            // Type checking: func rettype must be void
-           scope *func_scope = current_scope->prev;
-           decl *func_decl = func_scope->boundary->decl_ptr;
-           if (st_check_rettype_void(func_decl)) printf("RETURN match!\n");
-           else {
-               yyerror("incompatible return types");
-           }
+           // Find the closest function
+           // Move out of scope until we reach a function
+           scope *scope_iter = current_scope;
+           scope_iter = scope_iter->prev;
+           int match = 0;
+           while (scope_iter != type_scope) {
+                if (scope_iter->boundary->decl_ptr->declclass == DECL_FUNC) {
+                    // Found a function
+                    if (st_check_rettype_void(scope_iter->boundary->decl_ptr)) {
+                        printf("RETURN match!\n");
+                        match = 1;
+                        break;
+                    }
+                    else {
+                        yyerror("incompatible return types");
+                        match = 1;
+                        break;
+                    }
+                }
+                scope_iter = scope_iter->prev;
+            }
+            if (match == 0) yyerror("cannot return from non-function");
         }
         | RETURN expr ';'
         {
             if ($2 == NULL) ;
             else {
-                // Type checking: func rettype must equal the type of expr
-                scope *func_scope = current_scope->prev;
-                decl *func_decl = func_scope->boundary->decl_ptr;
-                decl *expr_decl = $2;
-                if (!st_check_iftype(expr_decl)) expr_decl = expr_decl->type;
-                if (st_check_rettype_match(func_decl, expr_decl)) printf("RETURN match!\n");
-                else {
-                    yyerror("incompatible return types");
+                scope *scope_iter = current_scope;
+                scope_iter = scope_iter->prev;
+                int match = 0;
+                while (scope_iter != type_scope) {
+                    if (scope_iter->boundary->decl_ptr->declclass == DECL_FUNC) {
+                        // Found a function
+                        decl *expr_decl = $2;
+                        if (!st_check_iftype(expr_decl)) expr_decl = expr_decl->type;
+                        if (st_check_rettype_match(scope_iter->boundary->decl_ptr, expr_decl)) {
+                            printf("RETURN match!\n");
+                            match = 1;
+                            break;
+                        }
+                        else {
+                            yyerror("incompatible return types");
+                            match = 1;
+                            break;
+                        }
+                    }
+                    scope_iter = scope_iter->prev;
                 }
+                if (match == 0) yyerror("cannot return from non-function");
             }
         }
         | ';'

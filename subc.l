@@ -56,7 +56,7 @@ operator       [-.,;\[\]\*()\{\}=\|&\/%\+!]
 {white-space}
 <*>\n		   {
     ++lineno;
-
+/*
     if (lineno == 27 ||
         lineno == 30 ||
         lineno == 33 ) {
@@ -64,7 +64,7 @@ operator       [-.,;\[\]\*()\{\}=\|&\/%\+!]
         scope_print();
         st_print();
     }
-
+*/
 }
 <INITIAL,COMMENT>"/*"	{
 		   ++comment_depth;
@@ -106,14 +106,14 @@ int main(int argc, char* argv[])
    scope_initialize();
    st_initialize();
    
-   st_print();
-   scope_print();
+   //st_print();
+   //scope_print();
 
    yyparse();
    fclose(yyin);
    
-   st_print();
-   scope_print();
+   //st_print();
+   //scope_print();
    // ht_print();
    return 0;
 }
