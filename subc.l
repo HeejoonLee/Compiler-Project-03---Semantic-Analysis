@@ -50,7 +50,7 @@ operator       [-.,;\[\]\*()\{\}=\|&\/%\+!]
 		}
 '({special-char}|[^\\'\n])'	{
 			/* Character Variable */
-		   yylval.stringVal = yytext;
+		   yylval.charVal = yytext[0];
 		   return CHAR_CONST;
 		}
 {operator} { return yytext[0]; }

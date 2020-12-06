@@ -18,6 +18,7 @@ char *buffer;
 %union {
 	int		intVal;
 	char	*stringVal;
+    char charVal;
     id *id_ptr;
     decl *decl_ptr;
     ste *ste_ptr;
@@ -41,7 +42,8 @@ char *buffer;
 %token VOID NULLT STRUCT RETURN IF ELSE WHILE FOR BREAK CONTINUE
 %token LOGICAL_OR LOGICAL_AND RELOP EQUOP INCOP DECOP STRUCTOP
 %token<intVal> INTEGER_CONST
-%token<stringVal> CHAR_CONST STRING
+%token<stringVal> STRING
+%token<charVal> CHAR_CONST
 %token<id_ptr> TYPE ID
 
 %type<stringVal> pointers
