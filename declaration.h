@@ -61,6 +61,7 @@ decl *decl_int_const(int int_value);
 decl *decl_array(decl *type_decl, decl *const_decl);
 decl *decl_array_type(decl *type_decl, decl *const_decl);
 decl *decl_type_from_type(decl *decl_type);
+decl *decl_struct_type(ste *fields);
 
 int _get_size(id *);
 int decl_is_type(decl *);

@@ -34,7 +34,8 @@ decl *decl_type(id *type_id) {
     else if (strcmp(type_id->name, "array") == 0) type = 1;
     else if (strcmp(type_id->name, "int") == 0) type = 2;
     else if (strcmp(type_id->name, "char") == 0) type = 3;
-    else type = 4;
+    else if (strcmp(type_id->name, "void") == 0) type = 4;
+    else type = 5;
     
     new_decl->typeclass = type;
     new_decl->elementvar = NULL;
@@ -289,7 +290,32 @@ decl *decl_type_from_type(decl *decl_type) {
     
     return new_decl;
 }
+
+
+/// @brief Make a struct type decl
+/// @param ste* of fields
+/// @retval decl* of new decl
+decl *decl_struct_type(ste *fields) {
+    decl *new_decl = malloc(sizeof(decl));
+    if (new_decl == NULL) printf("malloc error in decl_array_type\n");
     
+    new_decl->declclass = DECL_TYPE;
+    new_decl->type = NULL;
+    new_decl->value = 0;
+    new_decl->real_value = 0.0;
+    new_decl->formals = NULL;
+    new_decl->returntype = NULL;
+    new_decl->typeclass = 5; // struct
+    new_decl->elementvar = NULL;
+    new_decl->num_index = 0;
+    new_decl->fieldlist = fields;
+    new_decl->ptrto = NULL;
+    new_decl->size = 0;
+    new_decl->scope = NULL;
+    new_decl->next = NULL;
+    
+    return new_decl;
+}
     
 
 /// @brief Get the size of the type

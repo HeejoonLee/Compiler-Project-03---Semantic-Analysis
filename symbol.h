@@ -54,6 +54,7 @@ ste *st_insert(id *, decl *);
 ste *st_declare(id *var_id, decl *type_decl);
 decl *st_decl_from_id(id *id_ptr);
 ste *st_get_ste_from_decl(decl *decl_ptr);
+ste *st_insert_global(id *id_ptr, decl *decl_ptr);
 
 int st_check_ifdecl(id *id_ptr);
 int st_check_redecl(id *id_ptr);
@@ -68,6 +69,8 @@ int st_check_ifchar(decl *decl_ptr);
 int st_check_ifpointer(decl *decl_ptr);
 int st_check_array_index_range(decl *type, decl *const_decl);
 int st_check_ifarray(decl *decl_ptr);
+int st_check_ifstruct(decl *decl_ptr);
+int st_check_ifstructpointer(decl *decl_ptr);
 
 int st_check_rettype_match(decl *func_decl, decl *expr_type);
 int st_check_rettype_void(decl *func_decl);

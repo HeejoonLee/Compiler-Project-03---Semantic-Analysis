@@ -74,6 +74,30 @@ ste *st_insert(id *id_ptr, decl *decl_ptr) {
 }
 
 
+/// @brief Insert a new symbol table entry right after the head
+/// @param id*, decl*
+/// @retval ste* pointer to the newly created ste
+ste *st_insert_global(id *id_ptr, decl *decl_ptr) {
+    // search for the ste right after the head
+    ste *st_iter = st_tail;
+    
+    while(st_iter->prev != st_head) {
+        st_iter = st_iter->prev;
+    }
+    
+    
+    ste *new_ste = malloc(sizeof(ste));
+    if (new_ste == NULL) printf("malloc error in st_insert_global\n");
+    
+    new_ste->id_ptr = id_ptr;
+    new_ste->decl_ptr = decl_ptr;
+    new_ste->prev = st_head;
+    st_iter->prev = new_ste;
+    
+    return new_ste;
+}
+
+
 /// @brief Insert a new var to symbol table
 /// @brief Create a decl with declclass Var
 /// @brief and set its type pointer to type_decl
@@ -112,6 +136,16 @@ void st_print() {
                 printf("TYPE: %p, %d\n", decl_ptr->type->ptrto->type,
                 decl_ptr->type->ptrto->type->typeclass);
             }
+            else if (decl_ptr->type->typeclass == 5) {
+                // struct
+                ste *st_iter = decl_ptr->type->fieldlist;
+                while (st_iter != NULL) {
+                    printf("MEMB: %p, %s\n", st_iter->decl_ptr, st_iter->id_ptr->name);
+                    printf("TYPE: %p, %d\n", st_iter->decl_ptr->type,
+                           st_iter->decl_ptr->type->typeclass);
+                    st_iter = st_iter->prev;
+                }
+            }
         }
         else if (decl_ptr->declclass == DECL_CONST) {
             // constant
@@ -136,6 +170,16 @@ void st_print() {
         else {
             // type
             printf("TYPE: %p, %d\n", decl_ptr, decl_ptr->typeclass);
+            if (decl_ptr->typeclass == 5) {
+                // struct
+                ste *st_iter = decl_ptr->fieldlist;
+                while (st_iter != NULL) {
+                    printf("MEMB: %p, %s\n", st_iter->decl_ptr, st_iter->id_ptr->name);
+                    printf("TYPE: %p, %d\n", st_iter->decl_ptr->type,
+                           st_iter->decl_ptr->type->typeclass);
+                    st_iter = st_iter->prev;
+                }
+            }
         }
         
         printf("------------------------------\n");
@@ -302,6 +346,23 @@ int st_check_ifpointer(decl *decl_ptr) {
 /// @retval 1 if array, 0 if not array
 int st_check_ifarray(decl *decl_ptr) {
     return decl_ptr->typeclass == 1;
+}
+
+
+/// @brief Check if decl is struct
+/// @param decl* to check
+/// @retval 1 if struct, 0 if not
+int st_check_ifstruct(decl *decl_ptr) {
+    return decl_ptr->typeclass == 5;
+}
+
+
+/// @brief Check if decl is struct pointer
+/// @param decl* to check
+/// @retval 1 if struct pointer, 0 if not
+int st_check_ifstructpointer(decl *decl_ptr) {
+    if (decl_ptr->typeclass != 0) return 0;
+    else return decl_ptr->ptrto->type->typeclass == 5;
 }
 
 

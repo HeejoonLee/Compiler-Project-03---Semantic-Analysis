@@ -18,7 +18,7 @@ id		{letter}({letter}|{digit})*
 integer_const	([1-9]{digit}*)|"0"
 white-space		[ \t]+
 special-char	\\[nt]
-operator       [-,;\[\]\*()\{\}=\|&\/%\+!]
+operator       [-.,;\[\]\*()\{\}=\|&\/%\+!]
 
 
 %x COMMENT
@@ -57,12 +57,9 @@ operator       [-,;\[\]\*()\{\}=\|&\/%\+!]
 <*>\n		   {
     ++lineno;
 
-    if (lineno == 5 ||
-        lineno == 6 ||
-        lineno == 9 ||
-        lineno == 10 ||
-        lineno == 15 ||
-        lineno == 16) {
+    if (lineno == 27 ||
+        lineno == 30 ||
+        lineno == 33 ) {
         printf("LINE: %3d\n", lineno);
         scope_print();
         st_print();

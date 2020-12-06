@@ -46,7 +46,7 @@ void REDUCE(char* s);
 %type<stringVal> pointers
 %type<decl_ptr> type_specifier unary binary and_list and_expr
 %type<decl_ptr> or_expr or_list expr const_expr func_decl
-%type<decl_ptr> param_list param_decl args
+%type<decl_ptr> param_list param_decl args struct_specifier def
 
 %%
 program
@@ -70,17 +70,71 @@ ext_def
         | func_decl ';'
         | type_specifier ';'
         | func_decl compound_stmt
+        ;
 
 type_specifier
         : TYPE { 
             $$ = st_decl_from_id($1);
          }
         | VOID { $$ = st_decl_from_id(get_id_from_name("void")); }
-        | struct_specifier
+        | struct_specifier { $$ = $1; };
+        ;
 
 struct_specifier
-        : STRUCT ID '{' def_list '}'
+        : STRUCT ID '{'
+        {
+            if (st_decl_from_id($2) != NULL) {
+                yyerror("redeclaration");
+                $<ste_ptr>$ = current_scope->boundary;
+            }
+            else {
+                scope_push();
+                $<ste_ptr>$ = NULL;
+            }
+        }
+        def_list
+        {
+            if ($<ste_ptr>4 != NULL) {
+                // Pop all the pushed symbols
+                current_scope->boundary = $<ste_ptr>4;
+                st_tail->prev = current_scope->boundary;
+            }
+            else {
+                ste *prev_boundary = current_scope->prev->boundary;
+                if (current_scope->boundary == prev_boundary) {
+                    // 1. No member declared
+                    decl *struct_decl = decl_struct_type(NULL);
+                    st_insert_global($2, struct_decl);
+                    $<decl_ptr>$ = struct_decl;
+                }
+                else {
+                    ste *st_iter = current_scope->boundary;
+                    while (st_iter->prev != prev_boundary) st_iter = st_iter->prev;
+                    decl *struct_decl = decl_struct_type(current_scope->boundary);
+                    st_insert_global($2, struct_decl);
+                    st_iter->prev = NULL;
+                    $<decl_ptr>$ = struct_decl;
+                }
+            }
+        }
+        '}'
+        {
+            if ($<ste_ptr>4 != NULL) $$ = NULL;
+            else {
+                scope_pop();
+                $$ = $<decl_ptr>6;
+            }
+        }
         | STRUCT ID
+        {
+            decl *struct_decl = st_decl_from_id($2);
+            if (struct_decl == NULL) {
+                yyerror("incomplete type");
+                $$ = NULL;
+            }
+            else $$ = struct_decl;
+        }
+        ;
 
 func_decl
         : type_specifier pointers ID '(' ')'
@@ -160,32 +214,37 @@ def_list    /* list of definitions, definition can be type(struct), variable, fu
 def
         : type_specifier pointers ID ';' 
         { 
-            // REDUCE("def->type_specifier pointers ID ;");
-            if ($2 == NULL) {
-                // Not a pointer
-                if (st_check_redecl($3)) yyerror("redeclaration");
-                else {
-                    st_insert($3, decl_var($1));
-                }
-            }
+            if ($1 == NULL) $$ = NULL;
             else {
-                // Pointer
-                if (st_check_redecl($3)) yyerror("redeclaration");
+                if ($2 == NULL) {
+                    // Not a pointer
+                    if (st_check_redecl($3)) yyerror("redeclaration");
+                    else {
+                        st_insert($3, decl_var($1));
+                    }
+                }
                 else {
-                    st_insert($3, decl_pointer($1));
+                    // Pointer
+                    if (st_check_redecl($3)) yyerror("redeclaration");
+                    else {
+                        st_insert($3, decl_pointer($1));
+                    }
                 }
             }
         }
         | type_specifier pointers ID '[' const_expr ']' ';'
         {
-            if ($2 == NULL) {
-                // Not a pointer
-                if (st_check_redecl($3)) yyerror("redeclaration");
-                else st_insert($3, decl_array($1, $5));
-            }
-            else {
-                // Pointer
-                // TODO
+            if ($1 == NULL) $$ = NULL;
+                else {
+                if ($2 == NULL) {
+                    // Not a pointer
+                    if (st_check_redecl($3)) yyerror("redeclaration");
+                    else st_insert($3, decl_array($1, $5));
+                }
+                else {
+                    // Pointer
+                    // TODO
+                }
             }
         }
         | type_specifier ';'
@@ -520,7 +579,8 @@ unary
                 decl *type_decl = $2;
                 if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
                 if (st_check_ifint(type_decl) ||
-                    st_check_ifchar(type_decl)) $$ = decl_pointer(type_decl)->type;
+                    st_check_ifchar(type_decl) ||
+                    st_check_ifstruct(type_decl)) $$ = decl_pointer(type_decl)->type;
                 else {
                     yyerror("not a variable");
                     $$ = NULL;
@@ -564,7 +624,65 @@ unary
             }
         }
         | unary '.' ID
+        {
+            if ($1 == NULL) $$ = NULL;
+            else {
+                // Type checking: (1) unary must be a struct
+                // (2) ID must be a valid member
+                decl *type_decl = $1;
+                if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
+                if (st_check_ifstruct(type_decl)) {
+                    ste *st_iter = type_decl->fieldlist;
+                    int flag = 0;
+                    while (st_iter != NULL) {
+                        if ($3 == st_iter->id_ptr) {
+                            flag = 1;
+                            break;
+                        }
+                        st_iter = st_iter->prev;
+                    }
+                    if (flag == 0) {
+                        yyerror("struct not have same name field");
+                        $$ = NULL;
+                    }
+                    else $$ = st_iter->decl_ptr->type;
+                }
+                else {
+                    yyerror("not a struct");
+                    $$ = NULL;
+                }
+            }
+        }
         | unary STRUCTOP ID
+        {
+            if ($1 == NULL) $$ = NULL;
+            else {
+                // Type checking: (1) unary must be a struct pointer
+                // (2) ID must be a valid member
+                decl *type_decl = $1;
+                if (!st_check_iftype(type_decl)) type_decl = type_decl->type;
+                if (st_check_ifstructpointer(type_decl)) {
+                    ste *st_iter = type_decl->ptrto->type->fieldlist;
+                    int flag = 0;
+                    while (st_iter != NULL) {
+                        if ($3 == st_iter->id_ptr) {
+                            flag = 1;
+                            break;
+                        }
+                        st_iter = st_iter->prev;
+                    }
+                    if (flag == 0) {
+                        yyerror("struct not have same name field");
+                        $$ = NULL;
+                    }
+                    else $$ = st_iter->decl_ptr->type;
+                }
+                else {
+                    yyerror("not a struct");
+                    $$ = NULL;
+                }
+            }
+        }
         | unary '(' args ')'
         {
             if ($1 == NULL) $$ = NULL;
